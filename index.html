@@ -1,0 +1,2868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Thinking — Interactive Mental Models Guide</title>
+<style>
+:root {
+  --bg: #f8f9fa; --surface: #ffffff; --text: #1a1a2e; --text-secondary: #555;
+  --primary: #1a56db; --primary-light: #3b82f6; --accent: #f59e0b;
+  --accent-light: #fbbf24; --border: #e5e7eb; --shadow: rgba(0,0,0,0.08);
+  --card-bg: #fff; --sidebar-bg: #1a1a2e; --sidebar-text: #cbd5e1;
+  --code-bg: #f1f5f9; --success: #10b981; --danger: #ef4444;
+  --gradient: linear-gradient(135deg, #1a56db, #7c3aed);
+  --radius: 12px; --transition: 0.3s ease;
+}
+[data-theme="dark"] {
+  --bg: #0f172a; --surface: #1e293b; --text: #e2e8f0; --text-secondary: #94a3b8;
+  --primary: #3b82f6; --primary-light: #60a5fa; --border: #334155;
+  --shadow: rgba(0,0,0,0.3); --card-bg: #1e293b; --sidebar-bg: #0c1222;
+  --code-bg: #0f172a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; transition: background var(--transition), color var(--transition); }
+
+/* Progress Bar */
+#progress-bar { position:fixed; top:0; left:0; height:4px; background:var(--gradient); z-index:1000; transition: width 0.3s; }
+
+/* Sidebar */
+.sidebar { position:fixed; left:0; top:0; width:280px; height:100vh; background:var(--sidebar-bg); color:var(--sidebar-text); overflow-y:auto; z-index:100; transition: transform var(--transition); padding:20px 0; }
+.sidebar.collapsed { transform: translateX(-280px); }
+.sidebar-header { padding:15px 20px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.1); }
+.sidebar-header h2 { color:#fff; font-size:1.2rem; margin-bottom:2px; }
+.sidebar-header .subtitle { font-size:0.75rem; color:var(--accent); text-transform:uppercase; letter-spacing:2px; }
+.nav-item { display:flex; align-items:center; padding:12px 20px; cursor:pointer; transition: all var(--transition); border-left:3px solid transparent; font-size:0.9rem; }
+.nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--accent); color:#fff; }
+.nav-item .icon { margin-right:12px; font-size:1.1rem; width:24px; text-align:center; }
+.nav-item .badge { margin-left:auto; background:var(--accent); color:#000; font-size:0.65rem; padding:2px 6px; border-radius:10px; font-weight:700; }
+.model-count { padding:15px 20px; text-align:center; border-top:1px solid rgba(255,255,255,0.1); margin-top:10px; }
+.model-count .number { font-size:2rem; font-weight:800; color:var(--accent); }
+.model-count .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; }
+
+/* Main */
+.main { margin-left:280px; transition: margin-left var(--transition); }
+.sidebar.collapsed + .main { margin-left:0; }
+
+/* Top bar */
+.topbar { position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--border); padding:10px 30px; display:flex; align-items:center; justify-content:space-between; z-index:50; backdrop-filter:blur(10px); }
+.menu-toggle { background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--text); padding:5px; }
+.topbar-actions { display:flex; gap:10px; align-items:center; }
+.topbar-actions button { background:none; border:1px solid var(--border); border-radius:8px; padding:6px 12px; cursor:pointer; color:var(--text); font-size:0.85rem; transition:all var(--transition); }
+.topbar-actions button:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.search-box { padding:8px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); width:250px; font-size:0.9rem; }
+
+/* Hero */
+.hero { background:var(--gradient); color:#fff; padding:80px 40px; text-align:center; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%); animation: heroShine 8s ease-in-out infinite; }
+@keyframes heroShine { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(180deg)} }
+.hero h1 { font-size:3.2rem; font-weight:800; margin-bottom:10px; position:relative; }
+.hero h1 span { color:var(--accent-light); }
+.hero p { font-size:1.2rem; opacity:0.9; max-width:600px; margin:0 auto 25px; position:relative; }
+.hero-stats { display:flex; justify-content:center; gap:40px; position:relative; }
+.hero-stat { text-align:center; }
+.hero-stat .num { font-size:2.5rem; font-weight:800; }
+.hero-stat .lbl { font-size:0.8rem; opacity:0.8; }
+
+/* Sections */
+.chapter-section { padding:50px 40px; max-width:1100px; margin:0 auto; }
+.chapter-section:nth-child(even) { background:var(--surface); }
+.chapter-header { margin-bottom:35px; }
+.chapter-number { font-size:0.8rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:3px; }
+.chapter-title { font-size:2.2rem; font-weight:700; margin:5px 0 10px; }
+.chapter-intro { color:var(--text-secondary); font-size:1.05rem; max-width:700px; }
+
+/* Cards */
+.model-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:20px; margin:25px 0; }
+.model-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:24px; transition:all var(--transition); cursor:pointer; position:relative; overflow:hidden; }
+.model-card:hover { transform:translateY(-4px); box-shadow:0 12px 30px var(--shadow); border-color:var(--primary-light); }
+.model-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--gradient); transform:scaleX(0); transition:transform var(--transition); }
+.model-card:hover::before { transform:scaleX(1); }
+.model-card h3 { font-size:1.1rem; margin-bottom:8px; color:var(--primary); }
+.model-card p { font-size:0.9rem; color:var(--text-secondary); line-height:1.6; }
+.model-card .tag { display:inline-block; background:var(--code-bg); color:var(--primary); padding:2px 8px; border-radius:4px; font-size:0.7rem; margin-top:10px; font-weight:600; }
+.model-card .expand-icon { position:absolute; top:15px; right:15px; color:var(--text-secondary); font-size:1.2rem; }
+.model-card.expanded p.detail { display:block; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+.model-card p.detail { display:none; font-style:italic; }
+
+/* Diagrams */
+.diagram-container { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:30px; margin:25px 0; text-align:center; }
+.diagram-container h4 { margin-bottom:20px; font-size:1.1rem; }
+.diagram-container svg { max-width:100%; height:auto; }
+
+/* Interactive */
+.interactive-box { background:linear-gradient(135deg, var(--surface), var(--bg)); border:2px solid var(--accent); border-radius:var(--radius); padding:30px; margin:25px 0; }
+.interactive-box h4 { color:var(--accent); margin-bottom:15px; font-size:1.1rem; }
+.interactive-box .controls { display:flex; gap:10px; flex-wrap:wrap; margin:15px 0; }
+.interactive-box button, .quiz-btn { padding:10px 20px; border:2px solid var(--primary); background:transparent; color:var(--primary); border-radius:8px; cursor:pointer; font-weight:600; transition:all var(--transition); font-size:0.9rem; }
+.interactive-box button:hover, .quiz-btn:hover { background:var(--primary); color:#fff; }
+.quiz-btn.correct { background:var(--success); border-color:var(--success); color:#fff; }
+.quiz-btn.wrong { background:var(--danger); border-color:var(--danger); color:#fff; }
+
+/* Quiz */
+.quiz-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:30px; margin:30px 0; }
+.quiz-section h4 { margin-bottom:15px; font-size:1.1rem; }
+.quiz-question { font-weight:600; margin-bottom:15px; font-size:1rem; }
+.quiz-options { display:flex; flex-direction:column; gap:8px; }
+.quiz-result { margin-top:15px; padding:12px; border-radius:8px; font-weight:600; display:none; }
+.quiz-result.show { display:block; }
+.quiz-result.correct { background:rgba(16,185,129,0.1); color:var(--success); }
+.quiz-result.incorrect { background:rgba(239,68,68,0.1); color:var(--danger); }
+
+/* Slider */
+input[type="range"] { width:100%; accent-color:var(--primary); margin:10px 0; }
+.slider-output { font-size:1.5rem; font-weight:700; color:var(--primary); }
+
+/* Flowchart */
+.flowchart { display:flex; flex-direction:column; align-items:center; gap:5px; margin:20px 0; }
+.flow-node { background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; font-weight:600; font-size:0.85rem; text-align:center; max-width:250px; }
+.flow-arrow { font-size:1.5rem; color:var(--primary); }
+.flow-node.accent { background:var(--accent); color:#000; }
+.flow-node.danger { background:var(--danger); }
+
+/* Key Takeaway */
+.takeaway { background:linear-gradient(135deg, rgba(26,86,219,0.05), rgba(245,158,11,0.05)); border-left:4px solid var(--accent); padding:20px 25px; border-radius:0 var(--radius) var(--radius) 0; margin:30px 0; }
+.takeaway h4 { color:var(--accent); margin-bottom:8px; }
+.takeaway ul { padding-left:20px; }
+.takeaway li { margin-bottom:8px; font-size:0.95rem; }
+
+/* Tooltip */
+.tooltip { position:relative; display:inline; border-bottom:2px dotted var(--primary); cursor:help; }
+.tooltip:hover::after { content:attr(data-tip); position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:var(--sidebar-bg); color:#fff; padding:8px 12px; border-radius:6px; font-size:0.8rem; white-space:nowrap; z-index:10; }
+
+/* Tabs */
+.tabs { display:flex; gap:5px; margin-bottom:20px; border-bottom:2px solid var(--border); }
+.tab-btn { padding:10px 20px; border:none; background:none; cursor:pointer; font-weight:600; color:var(--text-secondary); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all var(--transition); }
+.tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* Responsive */
+@media(max-width:768px) {
+  .sidebar { transform:translateX(-280px); }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0!important; }
+  .hero h1 { font-size:2rem; }
+  .model-grid { grid-template-columns:1fr; }
+  .hero-stats { flex-direction:column; gap:15px; }
+  .chapter-section { padding:30px 20px; }
+  .search-box { width:150px; }
+}
+
+/* Animations */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.animate { animation: fadeInUp 0.5s ease forwards; }
+.model-card { opacity:0; animation: fadeInUp 0.5s ease forwards; }
+.model-card:nth-child(1){animation-delay:.05s} .model-card:nth-child(2){animation-delay:.1s}
+.model-card:nth-child(3){animation-delay:.15s} .model-card:nth-child(4){animation-delay:.2s}
+.model-card:nth-child(5){animation-delay:.25s} .model-card:nth-child(6){animation-delay:.3s}
+
+/* Canvas Charts */
+canvas { max-width:100%; border-radius:8px; }
+
+/* Venn Diagram */
+.venn { position:relative; width:350px; height:220px; margin:20px auto; }
+.venn-circle { position:absolute; width:180px; height:180px; border-radius:50%; opacity:0.3; border:3px solid; transition:all 0.3s; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.8rem; text-align:center; padding:20px; }
+.venn-circle:hover { opacity:0.5; }
+.venn-circle.left { left:20px; top:20px; background:var(--primary); border-color:var(--primary); color:var(--primary); }
+.venn-circle.right { right:20px; top:20px; background:var(--accent); border-color:var(--accent); color:#000; }
+.venn-overlap { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-weight:700; font-size:0.75rem; color:var(--text); z-index:2; text-align:center; background:rgba(255,255,255,0.7); padding:5px 8px; border-radius:4px; }
+
+/* Spectrum */
+.spectrum { display:flex; align-items:center; gap:0; margin:20px 0; border-radius:8px; overflow:hidden; }
+.spectrum-segment { flex:1; padding:15px 10px; text-align:center; color:#fff; font-weight:600; font-size:0.75rem; cursor:pointer; transition:all 0.3s; }
+.spectrum-segment:hover { filter:brightness(1.2); transform:scaleY(1.1); }
+
+/* Scroll animation observer */
+.reveal { opacity:0; transform:translateY(30px); transition: all 0.6s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:0%"></div>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>Super Thinking</h2>
+    <div class="subtitle">Mental Models Guide</div>
+  </div>
+  <div class="nav-item active" onclick="scrollToSection('hero')">
+    <span class="icon">&#9889;</span> Introduction
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch1')">
+    <span class="icon">&#127919;</span> 1. Being Wrong Less
+    <span class="badge">41</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch2')">
+    <span class="icon">&#9888;&#65039;</span> 2. What Can Go Wrong
+    <span class="badge">35</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch3')">
+    <span class="icon">&#9203;</span> 3. Spend Time Wisely
+    <span class="badge">43</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch4')">
+    <span class="icon">&#127793;</span> 4. One with Nature
+    <span class="badge">32</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch5')">
+    <span class="icon">&#128202;</span> 5. Lies &amp; Statistics
+    <span class="badge">43</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch6')">
+    <span class="icon">&#129300;</span> 6. Decisions, Decisions
+    <span class="badge">33</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch7')">
+    <span class="icon">&#9876;&#65039;</span> 7. Dealing with Conflict
+    <span class="badge">49</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch8')">
+    <span class="icon">&#128161;</span> 8. People's Potential
+    <span class="badge">37</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('ch9')">
+    <span class="icon">&#128200;</span> 9. Market Power
+    <span class="badge">31</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('conclusion')">
+    <span class="icon">&#127942;</span> Conclusion
+  </div>
+  <div class="model-count">
+    <div class="number" id="modelCounter">0</div>
+    <div class="label">Mental Models Explored</div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main" id="mainContent">
+
+<!-- Top Bar -->
+<div class="topbar">
+  <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+  <input type="text" class="search-box" placeholder="Search mental models..." id="searchBox" oninput="searchModels(this.value)">
+  <div class="topbar-actions">
+    <button onclick="toggleTheme()" id="themeBtn">&#127769; Dark</button>
+    <button onclick="showAllModels()">&#128218; All Models</button>
+  </div>
+</div>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <h1>Super <span>Thinking</span></h1>
+  <p>An interactive guide to the most powerful mental models from every discipline — your toolkit for making better decisions in life and work.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">344</div><div class="lbl">Mental Models</div></div>
+    <div class="hero-stat"><div class="num">9</div><div class="lbl">Chapters</div></div>
+    <div class="hero-stat"><div class="num">15+</div><div class="lbl">Disciplines</div></div>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 1 ==================== -->
+<section class="chapter-section" id="ch1">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter One</div>
+    <h2 class="chapter-title">Being Wrong Less</h2>
+    <p class="chapter-intro">You make dozens of decisions every day. Mental models help you be wrong less often by thinking more objectively, avoiding biases, and reasoning from first principles.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>First Principles Thinking</h3>
+      <p>Break problems down to their most basic truths, then reason up from there. Like a chef creating new recipes vs. following a cookbook.</p>
+      <p class="detail">Elon Musk famously used first principles to challenge the assumption that batteries must be expensive: by analyzing raw material costs, he showed they could be built for $80/kWh vs. the market rate of $600/kWh.</p>
+      <span class="tag">Foundation</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Inverse Thinking</h3>
+      <p>Instead of asking how to succeed, ask how to avoid failure. "Invert, always invert" — Carl Jacobi. The inverse of being right more is being <em>wrong less</em>.</p>
+      <p class="detail">For healthy eating: instead of constructing the perfect diet (direct approach), simply avoid unhealthy options wherever you go (inverse approach). Both get you to the same goal.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Antifragile</h3>
+      <p>Beyond resilience — things that actually <em>benefit</em> from shocks, volatility, and disorder. Make your thinking antifragile by learning from every mistake.</p>
+      <p class="detail">Like muscles that grow stronger from the stress of exercise, antifragile thinking gets better over time as you learn from mistakes and interact with your surroundings.</p>
+      <span class="tag">Nassim Taleb</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>De-Risking</h3>
+      <p>Test your most critical assumptions quickly and cheaply before committing major resources. Identify what <em>must</em> be true for your plan to work.</p>
+      <p class="detail">For a startup: test assumptions like "people will want this product" and "we can build it" — the most uncertain, most critical assumptions first.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Minimum Viable Product (MVP)</h3>
+      <p>Build the simplest version that lets real users test your core assumptions. "If you're not embarrassed by v1, you launched too late." — Reid Hoffman</p>
+      <p class="detail">The MVP prevents premature optimization — spending too much time perfecting something before validating that the core idea even works.</p>
+      <span class="tag">Lean Startup</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Ockham's Razor</h3>
+      <p>The simplest explanation is most likely true. "When you hear hoofbeats, think of horses, not zebras." Shave off unnecessary assumptions.</p>
+      <p class="detail">Named after William of Ockham (14th c.). Break your explanation into assumptions and for each ask: Does this need to be here? What evidence supports it?</p>
+      <span class="tag">Logic</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Overfitting Diagram -->
+  <div class="diagram-container reveal">
+    <h4>Overfitting vs. Simplicity</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Click to toggle between an overfit model (wavy line) and a simple model (straight line). The simple model often predicts better.</p>
+    <canvas id="overfitCanvas" width="500" height="300" style="border:1px solid var(--border);background:var(--bg);border-radius:8px;"></canvas>
+    <br>
+    <div class="controls" style="justify-content:center;margin-top:15px;">
+      <button onclick="toggleOverfit()" id="overfitBtn">Show Overfit Model</button>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Conjunction Fallacy Venn -->
+  <div class="diagram-container reveal">
+    <h4>Conjunction Fallacy: The Linda Problem</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Linda is 31, single, outspoken, and majored in philosophy. Which is more probable?</p>
+    <div class="venn">
+      <div class="venn-circle left">Bank Tellers</div>
+      <div class="venn-circle right">People Active in Feminist Movement</div>
+      <div class="venn-overlap">Both<br>(always smaller!)</div>
+    </div>
+    <p style="margin-top:15px;font-size:0.9rem;color:var(--text-secondary);">The overlap (conjunction) is <strong>always</strong> less probable than either circle alone. Most people get this wrong!</p>
+  </div>
+
+  <!-- Mental models continued -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Framing Effect</h3>
+      <p>How information is presented changes how people perceive it. The same event framed differently leads to completely different reactions.</p>
+      <p class="detail">Same incident, two headlines: "Officer Shot Responding to Wrong House" vs. "Cops at Wrong House Shoot Owner" — same facts, vastly different impressions.</p>
+      <span class="tag">Cognitive Bias</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Availability Bias</h3>
+      <p>We overweight information that comes easily to mind — recent events, vivid stories, things we've personally experienced — distorting our view of reality.</p>
+      <p class="detail">People overestimate deaths from tornadoes by 50x and underestimate deaths from stroke by 100x, because tornadoes get more dramatic media coverage.</p>
+      <span class="tag">Cognitive Bias</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Confirmation Bias</h3>
+      <p>The tendency to seek, interpret, and remember information that confirms your existing beliefs while ignoring contradictory evidence.</p>
+      <p class="detail">This is so hard to overcome that there's a related model — the backfire effect — where confronting people with evidence against their beliefs makes them believe even more strongly.</p>
+      <span class="tag">Cognitive Bias</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Anchoring</h3>
+      <p>Your tendency to rely too heavily on the first piece of information you encounter. This "anchor" then skews all subsequent judgments.</p>
+      <p class="detail">The Economist offered: Web $59, Print $125, Print+Web $125. No one chose print-only, but its presence anchored people to choose print+web (84% vs 32% without the anchor).</p>
+      <span class="tag">Behavioral Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Hanlon's Razor</h3>
+      <p>Never attribute to malice that which is adequately explained by carelessness. People usually take the path of least resistance, not the path of evil.</p>
+      <p class="detail">When someone sends a terse "OK" reply to your message, they're likely busy — not dismissive. Assume carelessness before malice, especially online where tone is absent.</p>
+      <span class="tag">Empathy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Filter Bubble / Echo Chamber</h3>
+      <p>Algorithms show you what you already agree with, creating a bubble. Connected bubbles form echo chambers where the same ideas bounce around.</p>
+      <p class="detail">DuckDuckGo studies showed that even in incognito mode, different people searching the same political topics on Google got significantly different results.</p>
+      <span class="tag">Information</span>
+    </div>
+  </div>
+
+  <!-- Ch1 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Unforced Error</h3>
+      <p>A mistake caused by your own poor judgment, not by external pressure. In tennis, hitting an easy ball into the net. In life, avoidable errors in baking, dating, or decisions.</p>
+      <p class="detail">To be wrong less, reduce your unforced errors. Start noticing them everywhere — they're surprisingly common once you look.</p>
+      <span class="tag">Sports / Life</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Nudging</h3>
+      <p>Subtly guiding choices through environmental cues — menu highlights, default options, product placement — without restricting freedom of choice.</p>
+      <p class="detail">A study found that the word used to describe a car crash ("contacted" vs. "smashed") changed speed estimates from 31 to 41 mph for the same film.</p>
+      <span class="tag">Behavioral Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Third Story</h3>
+      <p>In any conflict, there are two sides — and then a third: the story an impartial observer would tell. Forcing yourself into this perspective reveals blind spots.</p>
+      <p class="detail">Imagine a recording of the conflict. What would an outside audience say was happening? This disarms defensiveness and builds empathy.</p>
+      <span class="tag">Conflict Resolution</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Fundamental Attribution Error</h3>
+      <p>We attribute others' bad behavior to their character ("she's mean") but our own to circumstances ("I'm having a bad day"). The reverse of self-serving bias.</p>
+      <p class="detail">Someone runs a red light? "Reckless driver!" You run a red light? "I'm in a hurry." We judge others by actions and ourselves by intentions.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Veil of Ignorance</h3>
+      <p>When designing systems or policies, imagine you don't know which position you'll occupy in them. Would you support this policy if you might be anyone affected by it?</p>
+      <p class="detail">Philosopher John Rawls: before deciding on policy for refugees, consider that you could have been born a refugee. This produces fairer, more empathetic decisions.</p>
+      <span class="tag">Philosophy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Paradigm Shift</h3>
+      <p>When enough anomalies pile up, the old framework collapses and a new one takes its place. "Science progresses one funeral at a time" — Max Planck.</p>
+      <p class="detail">Continental drift was rejected for 40 years because the proposer was an outsider. The old guard holds on until evidence becomes overwhelming.</p>
+      <span class="tag">Science</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Cognitive Dissonance</h3>
+      <p>The stress of holding two contradictory beliefs simultaneously. Instead of confronting the contradiction, we rationalize the conflicting information away.</p>
+      <p class="detail">A survival instinct — our brain protects us from the uncomfortable truth that we might be wrong. Fight it by embracing new information instead of dismissing it.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Thinking Gray</h3>
+      <p>Resist forming opinions until you've heard all relevant facts. Most people think in black and white, but truth lives in shades of gray.</p>
+      <p class="detail">By delaying judgment, you avoid confirmation bias — you haven't yet made a decision to confirm. Hold two opposing thoughts simultaneously while retaining the ability to function.</p>
+      <span class="tag">Decision Making</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Devil's Advocate</h3>
+      <p>Deliberately argue the opposing side to stress-test your thinking. Originally a Catholic Church role for challenging candidates for sainthood.</p>
+      <p class="detail">Charlie Munger: "I never allow myself to have an opinion on anything that I don't know the other side's argument better than they do."</p>
+      <span class="tag">Critical Thinking</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Proximate vs. Root Cause</h3>
+      <p>The proximate cause is the immediate trigger. The root cause is the real, deeper reason. Treating symptoms without finding root causes means the problem recurs.</p>
+      <p class="detail">Challenger disaster: proximate cause was the O-ring failure. Root cause was organizational failure at NASA that ignored safety concerns.</p>
+      <span class="tag">Analysis</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Premature Optimization</h3>
+      <p>Perfecting something before validating that it's the right thing to build. If your assumptions are wrong, all that optimization work is wasted.</p>
+      <p class="detail">Don't book the entire vacation before confirming your family can come. Don't polish code before confirming the feature is needed. Validate first, optimize later.</p>
+      <span class="tag">Computer Science</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Optimistic Probability Bias</h3>
+      <p>Overestimating the likelihood of desired outcomes. You want it to be true so badly that you fool yourself into thinking it's likely.</p>
+      <p class="detail">NASA managers estimated Challenger failure at 1 in 100,000. Working engineers estimated 1 in 100. The people closest to reality were far less optimistic.</p>
+      <span class="tag">Cognitive Bias</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Anchoring Demo -->
+  <div class="interactive-box reveal">
+    <h4>&#9878;&#65039; Try It: Anchoring Effect</h4>
+    <p>Without thinking too hard, is the population of Turkey <em>more or less</em> than the number below?</p>
+    <div class="slider-output" id="anchorNum">150 million</div>
+    <p style="margin-top:10px;">Now, what's your estimate of Turkey's actual population?</p>
+    <input type="range" min="20" max="200" value="80" id="turkeySlider" oninput="document.getElementById('turkeyGuess').textContent=this.value+' million'">
+    <div class="slider-output" id="turkeyGuess">80 million</div>
+    <button onclick="revealTurkey()" style="margin-top:10px;">Reveal Answer</button>
+    <div id="turkeyAnswer" style="display:none;margin-top:10px;padding:12px;background:rgba(16,185,129,0.1);border-radius:8px;">
+      <strong>~85 million.</strong> If the anchor had been 15 million instead, studies show most people would have guessed lower. The anchor subtly pulls your estimate toward it!
+    </div>
+  </div>
+
+  <!-- 5 Whys -->
+  <div class="diagram-container reveal">
+    <h4>The 5 Whys: Finding Root Causes</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Click each "Why?" to drill deeper into the Challenger disaster's root cause.</p>
+    <div class="flowchart" id="fiveWhys">
+      <div class="flow-node" id="why0">The Challenger exploded</div>
+      <div class="flow-arrow" id="arrow0" style="display:none;">&#8595; Why?</div>
+      <div class="flow-node" id="why1" style="display:none;">External hydrogen tank ignited</div>
+      <div class="flow-arrow" id="arrow1" style="display:none;">&#8595; Why?</div>
+      <div class="flow-node" id="why2" style="display:none;">Hot gas leaked from solid rocket motor</div>
+      <div class="flow-arrow" id="arrow2" style="display:none;">&#8595; Why?</div>
+      <div class="flow-node" id="why3" style="display:none;">O-ring seal failed</div>
+      <div class="flow-arrow" id="arrow3" style="display:none;">&#8595; Why?</div>
+      <div class="flow-node" id="why4" style="display:none;">Temperature was 29°F — below O-ring's range</div>
+      <div class="flow-arrow" id="arrow4" style="display:none;">&#8595; Why?</div>
+      <div class="flow-node danger" id="why5" style="display:none;">Safety concerns were ignored — lack of proper checks at NASA</div>
+    </div>
+    <button onclick="revealNextWhy()" id="whyBtn" style="margin-top:15px;padding:10px 20px;border:2px solid var(--primary);background:transparent;color:var(--primary);border-radius:8px;cursor:pointer;font-weight:600;">Dig Deeper: Why?</button>
+  </div>
+
+  <!-- Ch1 Round 3: Final Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Frame of Reference</h3>
+      <p>Your perspective shapes what you see. In physics, objects appear still inside a moving train but fast to someone outside. In life, your experiences create your unique frame.</p>
+      <p class="detail">To make objective decisions, account for your frame of reference. Actively seek different frames — what does this look like from the customer's perspective? From a competitor's? From ten years in the future?</p>
+      <span class="tag">Physics / Perspective</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Most Respectful Interpretation (MRI)</h3>
+      <p>Interpret others' actions in the most respectful way possible. Give people the benefit of the doubt. It's not about being naive — it's about building trust by default.</p>
+      <p class="detail">If someone hasn't responded to your email, MRI says they're busy or working on it — not ignoring you. This approach builds trust and avoids escalating conflicts based on misread intentions.</p>
+      <span class="tag">Empathy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Just World Hypothesis & Birth Lottery</h3>
+      <p>The just world hypothesis is the belief that people get what they deserve. The birth lottery reminds us that much of our success comes from circumstances we didn't choose — where and to whom we were born.</p>
+      <p class="detail">Believing in a just world leads to victim-blame: "they should have worn different clothes" or "they're just lazy." Acknowledging the birth lottery fosters empathy and fairer judgments.</p>
+      <span class="tag">Philosophy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Learned Helplessness</h3>
+      <p>After repeated failure or uncontrollable negative experiences, people (and animals) stop trying — even when escape becomes possible. They've learned to feel helpless.</p>
+      <p class="detail">Seligman's dogs who were shocked randomly didn't try to escape when they could. Humans exhibit this in careers, relationships, and poverty. The cure: showing people their actions can make a difference.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Semmelweis Reflex & Disconfirmation Bias</h3>
+      <p>Semmelweis reflex: reflexively rejecting new evidence that contradicts established norms. Disconfirmation bias: imposing a higher burden of proof on ideas you don't want to believe.</p>
+      <p class="detail">Doctor Semmelweis showed handwashing saved lives, but doctors rejected him — they couldn't accept they'd been killing patients. He died in an asylum. The truth took another 20 years to be accepted.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Postmortem</h3>
+      <p>A structured examination of what happened after a project, incident, or decision — and how to improve next time. In medicine, it's examining a body; in business, it's examining a process.</p>
+      <p class="detail">At DuckDuckGo, postmortems are mandatory after every project. The goal isn't blame — it's learning. Organizations that skip postmortems repeat the same mistakes. The 5 Whys technique is a common postmortem tool.</p>
+      <span class="tag">Process</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Intuition (Fast vs. Slow Thinking)</h3>
+      <p>Kahneman's two systems: fast thinking (intuitive, automatic, effortless) and slow thinking (deliberate, logical, effortful). Intuition works well for familiar situations but fails in novel ones.</p>
+      <p class="detail">Driving on familiar roads is fast thinking. Navigating a new city requires slow thinking. Danger: anchoring, availability bias, and framing exploit your fast-thinking shortcuts. Slow down for important decisions.</p>
+      <span class="tag">Psychology</span>
+    </div>
+  </div>
+
+  <!-- Ch1 Quiz -->
+  <div class="quiz-section reveal">
+    <h4>&#127919; Chapter 1 Quiz: Test Your Understanding</h4>
+    <div class="quiz-question">Which mental model advises that the simplest explanation is most likely correct?</div>
+    <div class="quiz-options">
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q1')">First Principles</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'correct','q1')">Ockham's Razor</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q1')">Hanlon's Razor</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q1')">Confirmation Bias</button>
+    </div>
+    <div class="quiz-result" id="q1-result"></div>
+  </div>
+
+  <div class="takeaway reveal">
+    <h4>Key Takeaways — Chapter 1</h4>
+    <ul>
+      <li>Argue from <strong>first principles</strong> and seek <strong>root causes</strong> to avoid mental traps</li>
+      <li>Your intuition is often wrong: watch for <strong>availability bias</strong>, <strong>confirmation bias</strong>, and <strong>fundamental attribution error</strong></li>
+      <li>Use <strong>Ockham's razor</strong> and <strong>Hanlon's razor</strong> to find the simplest explanations, then <strong>de-risk</strong> your assumptions</li>
+      <li>Actively seek other perspectives: play <strong>Devil's advocate</strong>, escape your <strong>filter bubble</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 2 ==================== -->
+<section class="chapter-section" id="ch2">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter Two</div>
+    <h2 class="chapter-title">Anything That Can Go Wrong, Will</h2>
+    <p class="chapter-intro">Unintended consequences follow predictable patterns. Learn to see them coming — from the tragedy of the commons to the cobra effect.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Tragedy of the Commons</h3>
+      <p>When individuals act in self-interest with a shared resource, they deplete it for everyone. Each farmer adding one more cow seems rational — until the pasture is destroyed.</p>
+      <p class="detail">Boston Common (1630s) was overgrazed until a 70-cow limit was imposed in 1646. Modern parallels: overfishing, deforestation, antibiotic overuse, email spam.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Goodhart's Law</h3>
+      <p>"When a measure becomes a target, it ceases to be a good measure." People optimize for the metric, not the underlying goal.</p>
+      <p class="detail">Soviet nail factories measured by count produced tiny useless nails. Measured by weight, they produced single giant nails. The measure was optimized, but the goal was lost.</p>
+      <span class="tag">Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Cobra Effect</h3>
+      <p>When a solution makes the problem worse. British India offered bounties for dead cobras — people started <em>breeding</em> cobras. When bounties ended, they released them all.</p>
+      <p class="detail">Similarly in Hanoi: rat bounties were paid per tail. Enterprising catchers cut tails and released the rats to reproduce. The "solution" created more rats.</p>
+      <span class="tag">Perverse Incentives</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Moral Hazard</h3>
+      <p>People take more risks when they feel protected from consequences. Rental car insurance makes people drive more recklessly.</p>
+      <p class="detail">Financial advisers may take bigger risks with your money than they would with their own, since losses don't impact their net worth as much — a principal-agent problem.</p>
+      <span class="tag">Risk</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Adverse Selection</h3>
+      <p>When one side of a transaction has better information, the "bad" options drive out the "good." Used cars: sellers know quality, buyers can't tell lemons from peaches.</p>
+      <p class="detail">In insurance, sick people are most motivated to buy coverage, driving up costs and pushing healthy people out — a "death spiral" that requires mandates to prevent.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Boiling Frog</h3>
+      <p>Gradual negative changes go unnoticed until it's too late. Small compromises accumulate: technical debt, eroding relationships, climate change.</p>
+      <p class="detail">From finance: "short-termism" — focusing on quarterly earnings over long-term health. The software world calls this "technical debt" — quick fixes that accumulate into a crisis.</p>
+      <span class="tag">Systems</span>
+    </div>
+  </div>
+
+  <!-- Ch2 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Tyranny of Small Decisions</h3>
+      <p>A series of individually rational small decisions that collectively lead to a terrible outcome. Death by a thousand cuts.</p>
+      <p class="detail">Each small credit card purchase feels fine. Each environmental shortcut seems trivial. But in aggregate, they create debt crises and ecological disasters.</p>
+      <span class="tag">Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Free Rider Problem</h3>
+      <p>Some people benefit from a resource without contributing to it. Tax cheats use infrastructure without paying; team members coast on others' work.</p>
+      <p class="detail">Free-riding is commonplace with public goods. When enough people free-ride (like skipping vaccinations), the whole system can collapse — a tragedy of the commons.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Herd Immunity</h3>
+      <p>When enough of a population is immune to a disease, it protects those who aren't. For measles, the threshold is ~95% — below that, outbreaks occur.</p>
+      <p class="detail">Before the measles vaccine (1963), 500,000+ annual cases in the US. After vaccination: near zero. But anti-vax free-riders threaten this public good.</p>
+      <span class="tag">Biology / Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Externalities</h3>
+      <p>Consequences — good or bad — imposed on others who didn't choose them. Factory pollution is a negative externality; a neighbor's nice garden is a positive one.</p>
+      <p class="detail">Addressing externalities means "internalizing" them — making the entity causing the effect pay for it through taxes, fines, regulation, or market solutions.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Principal-Agent Problem</h3>
+      <p>When someone (agent) acts on your behalf (principal), their self-interest may conflict with yours. Real estate agents sell your house faster — not at the best price.</p>
+      <p class="detail">Agents keep their own homes on the market 10 days longer and sell for 3%+ more. Their extra $150 commission on your extra $10K isn't enough incentive to hold out for you.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Perverse Incentives</h3>
+      <p>When an incentive structure produces the opposite of the desired behavior. High-stakes testing creates incentives to cheat rather than learn.</p>
+      <p class="detail">In Atlanta, 178 educators were implicated in a test-score cheating scandal. The incentive to raise scores was stronger than the incentive to actually educate.</p>
+      <span class="tag">Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Observer Effect</h3>
+      <p>Measuring or observing something changes the thing being measured. A tire pressure gauge lets out some air. People act differently when they know they're being watched.</p>
+      <p class="detail">After Snowden's NSA revelations, Wikipedia views of terrorism-related articles dropped 20%. Observation chilled behavior — the "chilling effect."</p>
+      <span class="tag">Physics / Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Collateral Damage / Blowback</h3>
+      <p>Unintended harm to bystanders (collateral damage) or harm that boomerangs back to the actor (blowback). The No Fly List creates collateral damage for people sharing names with suspects.</p>
+      <p class="detail">The US supported Afghan insurgents in the 1980s. Those same groups later fought against the US — classic blowback decades later.</p>
+      <span class="tag">Military / Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Analysis Paralysis</h3>
+      <p>Overthinking a decision to the point of never making one. Remember: not deciding IS a decision — you're choosing the status quo, which may be the worst option.</p>
+      <p class="detail">"Perfect is the enemy of good." For reversible decisions, act quickly. Reserve deep analysis for truly irreversible, high-stakes choices.</p>
+      <span class="tag">Decision Making</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Precautionary Principle</h3>
+      <p>When an action could cause severe or irreversible harm, proceed with extreme caution — even without full scientific certainty. "First, do no harm."</p>
+      <p class="detail">If a substance might cause cancer, control it now while scientists study it — don't wait for certainty while people are exposed. The EU formally adopted this principle.</p>
+      <span class="tag">Risk Management</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Adverse Selection Death Spiral -->
+  <div class="diagram-container reveal">
+    <h4>The "Death Spiral" of Adverse Selection</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Click "Next Step" to see how adverse selection creates a vicious cycle:</p>
+    <div class="flowchart" id="deathSpiral">
+      <div class="flow-node" id="ds0">Individuals know their risks better than insurers</div>
+      <div class="flow-arrow" style="display:none;" id="dsA1">&#8595;</div>
+      <div class="flow-node" id="ds1" style="display:none;">High-risk people buy more insurance; some low-risk people skip it</div>
+      <div class="flow-arrow" style="display:none;" id="dsA2">&#8595;</div>
+      <div class="flow-node accent" id="ds2" style="display:none;">Average risk of insured pool rises</div>
+      <div class="flow-arrow" style="display:none;" id="dsA3">&#8595;</div>
+      <div class="flow-node" id="ds3" style="display:none;">Insurance companies raise premiums</div>
+      <div class="flow-arrow" style="display:none;" id="dsA4">&#8595;</div>
+      <div class="flow-node danger" id="ds4" style="display:none;">More low-risk people drop out &#8594; cycle repeats!</div>
+    </div>
+    <button onclick="revealNextDS()" id="dsBtn" style="margin-top:15px;padding:10px 20px;border:2px solid var(--primary);background:transparent;color:var(--primary);border-radius:8px;cursor:pointer;font-weight:600;">Next Step &#8594;</button>
+  </div>
+
+  <!-- Ch2 Round 3: Final Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Coase Theorem & Cap-and-Trade</h3>
+      <p>Coase showed that if property rights are well-defined, transaction costs are low, and actors are rational, externalities can be internalized efficiently without government intervention.</p>
+      <p class="detail">Cap-and-trade applies this: the government caps total emissions, distributes permits, and lets companies trade them. This creates a market-based solution to pollution — a practical application of Coase's insight.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Government Failure & Campbell's Law</h3>
+      <p>Government failure occurs when intervention to fix a market failure creates new problems. Campbell's law: "The more a metric is used for decision-making, the more it will be corrupted."</p>
+      <p class="detail">Political failure is the political version — policy shaped by special interests rather than public good. Campbell's law is closely related to Goodhart's law: both warn that targeted metrics get gamed.</p>
+      <span class="tag">Politics / Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Hydra Effect</h3>
+      <p>Named after the mythological beast that grows two heads for each one cut off. Shutting down one drug dealer creates two. Closing one piracy site spawns several more.</p>
+      <p class="detail">Regime change can produce worse regimes. Don't kick a hornet's nest — some problems multiply when you attack them head-on. Consider whether your "solution" might feed the problem.</p>
+      <span class="tag">Unintended Consequences</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Information Overload & Hick's Law</h3>
+      <p>Too much information overloads your processing capacity, slowing decisions. Hick's law: decision time increases logarithmically with the number of choices.</p>
+      <p class="detail">Decision fatigue is the result — after making too many decisions, the quality of each subsequent decision degrades. Simplify: reduce options, set defaults, and batch similar decisions together.</p>
+      <span class="tag">Decision Making</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Murphy's Law & Paradox of Choice</h3>
+      <p>"Anything that can go wrong will go wrong" — Murphy's law. The paradox of choice: more options should make us happier but instead cause anxiety, regret, and paralysis.</p>
+      <p class="detail">Satisficing (choosing "good enough") often beats maximizing (seeking the absolute best). Maximizers spend more time deciding and are less happy with their choices. Sometimes less choice is more freedom.</p>
+      <span class="tag">Decision Making</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Herd Immunity Simulator -->
+  <div class="interactive-box reveal">
+    <h4>&#129514; Interactive: Herd Immunity Threshold</h4>
+    <p>Adjust the vaccination rate to see when herd immunity protects the population:</p>
+    <input type="range" min="0" max="100" value="50" id="herdSlider" oninput="updateHerd(this.value)">
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
+      <span>0% vaccinated</span><span>100% vaccinated</span>
+    </div>
+    <div style="margin-top:15px;">
+      <div class="slider-output" id="herdPct">50%</div>
+      <div id="herdStatus" style="font-size:0.95rem;margin-top:5px;">vaccinated</div>
+    </div>
+    <canvas id="herdCanvas" width="400" height="100" style="margin-top:15px;"></canvas>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Streisand Effect</h3>
+      <p>Trying to hide something draws more attention to it. Named after Barbra Streisand, whose lawsuit over an aerial photo drew millions of views instead of 6.</p>
+      <p class="detail">As was said of Watergate: "It's not the crime, it's the cover-up." Attempts at suppression become the story.</p>
+      <span class="tag">Unintended Consequences</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Path Dependence</h3>
+      <p>Your current options are constrained by past decisions. Early, seemingly small choices can have massive long-term impacts on available paths.</p>
+      <p class="detail">People tend to stay near where they went to school. Companies get locked into early technology choices. The QWERTY keyboard persists despite being suboptimal.</p>
+      <span class="tag">Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Preserving Optionality</h3>
+      <p>Make choices that keep future options open. Save a rainy-day fund. Learn transferable skills. Choose a college with many strong departments.</p>
+      <p class="detail">The balance: too much optionality means never committing. Use the precautionary principle for truly irreversible decisions, but don't be paralyzed for reversible ones.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Technical Debt</h3>
+      <p>Short-term code shortcuts that accumulate "debt" requiring future cleanup. Extends beyond software: management debt, design debt, relationship debt.</p>
+      <p class="detail">Like financial debt, some tech debt is strategic (ship faster now). But unmanaged debt compounds until the system collapses — the boiling frog of software.</p>
+      <span class="tag">Software / Life</span>
+    </div>
+  </div>
+
+  <div class="quiz-section reveal">
+    <h4>&#127919; Chapter 2 Quiz</h4>
+    <div class="quiz-question">A company offers a bounty per rat tail. People start breeding rats for profit. This is an example of:</div>
+    <div class="quiz-options">
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q2')">Moral Hazard</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q2')">Streisand Effect</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'correct','q2')">Cobra Effect</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q2')">Adverse Selection</button>
+    </div>
+    <div class="quiz-result" id="q2-result"></div>
+  </div>
+
+  <div class="takeaway reveal">
+    <h4>Key Takeaways — Chapter 2</h4>
+    <ul>
+      <li>Watch for the <strong>tragedy of the commons</strong> whenever shared resources are involved</li>
+      <li><strong>Goodhart's law</strong>: targets get gamed. Design incentives that align with actual goals</li>
+      <li>Risk-related models (<strong>moral hazard</strong>, <strong>adverse selection</strong>) explain many market failures</li>
+      <li>Think long-term to avoid the <strong>boiling frog</strong> — small bad decisions compound into crises</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 3 ==================== -->
+<section class="chapter-section" id="ch3">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter Three</div>
+    <h2 class="chapter-title">Spend Your Time Wisely</h2>
+    <p class="chapter-intro">Time is your most valuable resource. These models help you allocate it effectively by understanding opportunity costs, diminishing returns, and the power of leverage.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Opportunity Cost</h3>
+      <p>Every choice has a hidden cost: the value of the next-best alternative you didn't choose. The real cost of anything is what you gave up to get it.</p>
+      <p class="detail">Watching 3 hours of TV doesn't just "cost" 3 hours — it costs whatever else you could have done: exercise, learning, socializing. Make the trade-off explicit.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Sunk Cost Fallacy</h3>
+      <p>Continuing something because of past investment (time, money, effort) rather than future value. Past costs are gone — only future costs and benefits matter.</p>
+      <p class="detail">"We've already spent $1M on this project" is not a reason to spend $1M more if the project is failing. Each decision should stand on its own merits going forward.</p>
+      <span class="tag">Decision Making</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Pareto Principle (80/20 Rule)</h3>
+      <p>Roughly 80% of effects come from 20% of causes. 80% of revenue often comes from 20% of customers. Focus on the vital few, not the trivial many.</p>
+      <p class="detail">Applied to time: identify the 20% of activities that produce 80% of your results, and prioritize those ruthlessly. Cut or delegate the rest.</p>
+      <span class="tag">Productivity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Diminishing Returns</h3>
+      <p>Each additional unit of effort produces less and less additional benefit. The first hour of study helps more than the tenth hour on the same topic.</p>
+      <p class="detail">Eventually you can hit negative returns — where more effort actually makes things worse. Overtraining in sports, over-editing a document, over-optimizing code.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Parkinson's Law</h3>
+      <p>"Work expands to fill the time available for its completion." Give yourself a week, it takes a week. Give yourself two hours, you might finish in two hours.</p>
+      <p class="detail">Combat this by setting aggressive but realistic deadlines. Use time-boxing: allocate fixed blocks of time to tasks and move on when the block is up.</p>
+      <span class="tag">Productivity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Loss Aversion</h3>
+      <p>Losses feel roughly twice as painful as equivalent gains feel good. This is why people hold losing stocks too long and sell winners too early.</p>
+      <p class="detail">Related to the status quo bias and default effect — people disproportionately stick with the current state because changing feels like a potential loss.</p>
+      <span class="tag">Behavioral Economics</span>
+    </div>
+  </div>
+
+  <!-- Ch3 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>North Star</h3>
+      <p>A guiding vision that keeps you oriented through daily chaos, like Polaris guides navigators. Companies need a north star metric; individuals need a guiding purpose.</p>
+      <p class="detail">Without a north star, you'll optimize locally but drift globally. Peter Thiel at PayPal insisted each person work on exactly one priority — one north star per person.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Deep Work</h3>
+      <p>Long, uninterrupted periods of focused effort on cognitively demanding tasks. The opposite of shallow work (emails, meetings, Slack). Deep work is rare and valuable.</p>
+      <p class="detail">Cal Newport: the ability to do deep work is becoming increasingly rare at exactly the same time it's becoming increasingly valuable. Protect your deep work blocks.</p>
+      <span class="tag">Productivity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Eisenhower Decision Matrix</h3>
+      <p>A 2x2 grid: Urgent vs. Not Urgent, Important vs. Not Important. Do urgent+important now; schedule important+not-urgent; delegate urgent+unimportant; eliminate the rest.</p>
+      <p class="detail">Most people spend too much time on urgent-but-unimportant tasks (emails, interruptions) and neglect important-but-not-urgent ones (exercise, planning, relationships).</p>
+      <span class="tag">Productivity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Leverage</h3>
+      <p>A small force producing outsized results — like a lever multiplying your strength. High-leverage activities produce the greatest effects per unit of effort.</p>
+      <p class="detail">Writing code that automates a task done 100x/day is high-leverage. Attending a meeting that could have been an email is low-leverage. Seek the lever, not the grind.</p>
+      <span class="tag">Physics / Productivity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Hofstadter's Law</h3>
+      <p>"It always takes longer than you expect, even when you take into account Hofstadter's Law." A recursive reminder that we consistently underestimate time needed.</p>
+      <p class="detail">This is why software projects are always late, renovations always exceed timelines, and your "quick errand" takes the whole afternoon.</p>
+      <span class="tag">Planning</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Default Effect</h3>
+      <p>People overwhelmingly accept the default option. Countries with opt-out organ donation have ~90% participation; opt-in countries have ~15%.</p>
+      <p class="detail">Use this strategically: set good defaults for yourself (gym bag packed, healthy snacks visible) and understand when others are nudging you via defaults.</p>
+      <span class="tag">Behavioral Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Present Bias / Hyperbolic Discounting</h3>
+      <p>We irrationally overvalue immediate rewards over future ones. You know you should save, but spending feels better now. The future self always loses to the present self.</p>
+      <p class="detail">Net present value makes this rational: $100 today IS worth more than $100 in a year. But humans discount the future far more steeply than any reasonable interest rate.</p>
+      <span class="tag">Behavioral Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Bike-shedding</h3>
+      <p>Spending disproportionate time on trivial issues while neglecting important ones. Named after Parkinson's observation that committees debate the bike shed but rubber-stamp the reactor.</p>
+      <p class="detail">Related to Sayre's law: "The intensity of feeling is inversely proportional to the value of the issues at stake." Watch for bike-shedding in every meeting.</p>
+      <span class="tag">Productivity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Design Patterns & Anti-Patterns</h3>
+      <p>Reusable solutions to common problems (patterns) vs. intuitive but actually ineffective solutions (anti-patterns). Learn both to save time and avoid pitfalls.</p>
+      <p class="detail">Heuristics are practical shortcuts — not guaranteed optimal but effective enough. Algorithms are precise step-by-step processes. Know when to use each.</p>
+      <span class="tag">Problem Solving</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Divide and Conquer</h3>
+      <p>Break a big problem into independent sub-problems, solve each separately, then combine the results. Enables parallel processing — tackling multiple parts simultaneously.</p>
+      <p class="detail">Disney reframed long ride lines from "move people faster" to "make waiting enjoyable" — leading to FastPass and in-line entertainment. Sometimes, reframe the problem entirely.</p>
+      <span class="tag">Problem Solving</span>
+    </div>
+  </div>
+
+  <!-- Ch3 Round 3: Remaining Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Compound Interest & Discount Rate</h3>
+      <p>Compound interest makes small gains snowball over time. The discount rate is the inverse — it measures how much less future money is worth today (net present value).</p>
+      <p class="detail">Discounted cash flow analysis values investments by discounting all future payments to their present value. A dollar today is worth more than a dollar tomorrow — the discount rate captures exactly how much more.</p>
+      <span class="tag">Finance</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Two-Front Wars & Multitasking</h3>
+      <p>Fighting on multiple fronts divides your attention and weakens all efforts. Multitasking on cognitively demanding tasks is a myth — you're just switching rapidly between tasks, poorly.</p>
+      <p class="detail">Paul Graham's "top idea in your mind": your subconscious works on whatever occupies your top mental slot. If that slot is filled with distractions, your best thinking never happens.</p>
+      <span class="tag">Focus</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Burnout & Negative Returns</h3>
+      <p>Past diminishing returns lies negative returns — where more effort actively makes things worse. Burnout is the human version: sustained high stress that extinguishes motivation entirely.</p>
+      <p class="detail">Diminishing utility means each additional unit of consumption provides less satisfaction. One slice of cheesecake is amazing; a whole cheesecake makes you sick. Know when to stop.</p>
+      <span class="tag">Productivity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Commitment Device</h3>
+      <p>A mechanism that locks in future behavior to overcome present bias. Setting up automatic savings, prepaying for the gym, or telling friends about your goal — all force follow-through.</p>
+      <p class="detail">Odysseus tied himself to the mast to resist the sirens. Modern equivalents: website blockers during work hours, deleting social media apps, or putting your alarm across the room.</p>
+      <span class="tag">Behavioral Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Black Boxes & Automation</h3>
+      <p>A black box is a system where you use inputs and outputs without needing to understand internals. Automation replaces repetitive manual work with machines or software.</p>
+      <p class="detail">Using a brute force approach means trying every possibility exhaustively — slow but reliable. Heuristics are faster shortcuts. Automation scales heuristics, and economies of scale make them cheaper over time.</p>
+      <span class="tag">Problem Solving</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Power Law Distribution</h3>
+      <p>A mathematical pattern where a small number of items account for a disproportionate share of the total — the underlying math behind the 80/20 Pareto principle.</p>
+      <p class="detail">Wealth, city sizes, website traffic, earthquake magnitudes — all follow power laws. Unlike a bell curve, extremes are far more common than you'd expect.</p>
+      <span class="tag">Mathematics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Social Engineering</h3>
+      <p>Manipulating people into revealing confidential information or taking actions. The weakest link in any security system is usually the human.</p>
+      <p class="detail">The 2014 iCloud celebrity photo hack and the DNC email hack both exploited social engineering rather than technical vulnerabilities. Security is only as strong as its most gullible user.</p>
+      <span class="tag">Security</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Eisenhower Matrix -->
+  <div class="diagram-container reveal">
+    <h4>Eisenhower Decision Matrix</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Categorize tasks by urgency and importance:</p>
+    <div style="display:grid;grid-template-columns:auto 1fr 1fr;grid-template-rows:auto 1fr 1fr;gap:3px;max-width:500px;margin:0 auto;font-size:0.85rem;">
+      <div></div>
+      <div style="text-align:center;font-weight:700;padding:8px;color:var(--primary);">URGENT</div>
+      <div style="text-align:center;font-weight:700;padding:8px;color:var(--primary);">NOT URGENT</div>
+      <div style="writing-mode:vertical-rl;text-orientation:mixed;font-weight:700;padding:8px;color:var(--primary);text-align:center;">IMPORTANT</div>
+      <div style="background:rgba(239,68,68,0.1);border:2px solid var(--danger);border-radius:8px;padding:15px;">
+        <strong style="color:var(--danger);">DO FIRST</strong><br>Crises, deadlines, emergencies
+      </div>
+      <div style="background:rgba(16,185,129,0.1);border:2px solid var(--success);border-radius:8px;padding:15px;">
+        <strong style="color:var(--success);">SCHEDULE</strong><br>Planning, exercise, learning, relationships
+      </div>
+      <div style="writing-mode:vertical-rl;text-orientation:mixed;font-weight:700;padding:8px;color:var(--primary);text-align:center;">NOT IMPORTANT</div>
+      <div style="background:rgba(245,158,11,0.1);border:2px solid var(--accent);border-radius:8px;padding:15px;">
+        <strong style="color:var(--accent);">DELEGATE</strong><br>Interruptions, some emails, some meetings
+      </div>
+      <div style="background:rgba(148,163,184,0.1);border:2px solid #94a3b8;border-radius:8px;padding:15px;">
+        <strong style="color:#94a3b8;">ELIMINATE</strong><br>Time-wasters, busywork, excessive social media
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Diminishing Returns Graph -->
+  <div class="diagram-container reveal">
+    <h4>Diminishing Returns: Effort vs. Output</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Drag the slider to see how each additional hour of effort yields less additional output:</p>
+    <canvas id="diminishCanvas" width="500" height="300" style="border:1px solid var(--border);background:var(--bg);border-radius:8px;"></canvas>
+    <input type="range" min="1" max="20" value="10" id="diminishSlider" oninput="drawDiminishing(this.value)">
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
+      <span>1 hour of effort</span><span>20 hours of effort</span>
+    </div>
+    <div style="margin-top:10px;">
+      <span>Output: </span><strong id="diminishOutput">70%</strong>
+      <span style="margin-left:15px;">Marginal gain from last hour: </span><strong id="diminishMarginal">5%</strong>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Pareto Chart -->
+  <div class="interactive-box reveal">
+    <h4>&#128202; The 80/20 Principle in Action</h4>
+    <p>Typical business revenue distribution — 20% of customers generate most revenue:</p>
+    <canvas id="paretoCanvas" width="500" height="250" style="margin-top:15px;"></canvas>
+  </div>
+
+  <div class="quiz-section reveal">
+    <h4>&#127919; Chapter 3 Quiz</h4>
+    <div class="quiz-question">"We've already invested $2M, we can't stop now!" This reasoning is an example of:</div>
+    <div class="quiz-options">
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q3')">Opportunity Cost</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'correct','q3')">Sunk Cost Fallacy</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q3')">Loss Aversion</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q3')">Parkinson's Law</button>
+    </div>
+    <div class="quiz-result" id="q3-result"></div>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 4 ==================== -->
+<section class="chapter-section" id="ch4">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter Four</div>
+    <h2 class="chapter-title">Becoming One with Nature</h2>
+    <p class="chapter-intro">Nature's patterns — tipping points, exponential growth, entropy — are powerful metaphors for understanding change in business, society, and your personal life.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Critical Mass / Tipping Point</h3>
+      <p>The threshold amount needed to trigger a self-sustaining chain reaction. From physics: the mass of nuclear material needed for a chain reaction.</p>
+      <p class="detail">Applies to businesses (Lyft needs enough drivers per city), ideas (enough early adopters), and social movements (enough participants to sustain momentum).</p>
+      <span class="tag">Physics / Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Activation Energy / Catalyst</h3>
+      <p>The initial energy needed to start a reaction. A catalyst lowers this barrier. In life: the hardest part of a workout is putting on your shoes.</p>
+      <p class="detail">Lower activation energy for good habits (lay out gym clothes) and raise it for bad ones (put your phone in another room). Be a catalyst for others by removing barriers.</p>
+      <span class="tag">Chemistry</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Flywheel</h3>
+      <p>A heavy wheel that's hard to start but, once spinning, maintains its own momentum. Amazon's flywheel: lower prices &#8594; more customers &#8594; more sellers &#8594; lower prices.</p>
+      <p class="detail">The key insight: early effort feels disproportionately unrewarded, but once the flywheel catches, each push produces accelerating results.</p>
+      <span class="tag">Business</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Compound Growth</h3>
+      <p>Small consistent gains accumulate exponentially. 1% better daily = 37x better in a year. The most powerful force in the universe, according to (maybe) Einstein.</p>
+      <p class="detail">Applies to money, knowledge, relationships, and skills. The earlier you start, the more time compounding has to work its magic.</p>
+      <span class="tag">Mathematics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Entropy</h3>
+      <p>Everything tends toward disorder. Without active maintenance, systems degrade: code rots, relationships fade, organizations bureaucratize.</p>
+      <p class="detail">Fighting entropy requires continuous energy input. This is why habits decay, why organizations need renewal, and why your desk gets messy if you don't tidy it.</p>
+      <span class="tag">Physics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Network Effects</h3>
+      <p>A product becomes more valuable as more people use it. Telephones, social networks, marketplaces — value grows with the square of users (Metcalfe's Law).</p>
+      <p class="detail">This creates winner-take-all dynamics and explains why it's so hard to compete with established platforms. The network IS the product.</p>
+      <span class="tag">Technology</span>
+    </div>
+  </div>
+
+  <!-- Ch4 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Inertia</h3>
+      <p>An object in motion stays in motion; an object at rest stays at rest. Organizations, habits, and beliefs all resist change. The "strategy tax" keeps companies stuck on old approaches.</p>
+      <p class="detail">The Shirky principle: "Institutions will try to preserve the problem to which they are the solution." Incumbents fight change that threatens their existence.</p>
+      <span class="tag">Physics / Organizations</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Momentum</h3>
+      <p>Once something is moving, it's easier to keep going. The flywheel effect: early effort feels unrewarded, but once spinning, each push produces accelerating results.</p>
+      <p class="detail">Amazon's flywheel: lower prices attract more customers, which attract more sellers, which enable lower prices. Once spinning, it's nearly unstoppable.</p>
+      <span class="tag">Physics / Business</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Homeostasis</h3>
+      <p>Systems naturally resist change and return to equilibrium. Your body regulates temperature; organizations resist restructuring; habits resist breaking.</p>
+      <p class="detail">Understanding homeostasis explains why change is hard and why sustained effort is needed. A forcing function — an external constraint — can overcome homeostatic resistance.</p>
+      <span class="tag">Biology / Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Forcing Function</h3>
+      <p>An external constraint that forces a desired behavior. Deadlines force action. Commitments force follow-through. Making plans with friends forces you to show up.</p>
+      <p class="detail">Lower activation energy for good habits and raise it for bad ones. Lay out gym clothes the night before. Put your phone in another room while working.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Technology Adoption Life Cycle</h3>
+      <p>New technologies follow a predictable adoption pattern: Innovators (2.5%), Early Adopters (13.5%), Early Majority (34%), Late Majority (34%), Laggards (16%).</p>
+      <p class="detail">There's often a "chasm" between early adopters and the early majority. Many products die in this gap — they appeal to enthusiasts but fail to cross over to mainstream users.</p>
+      <span class="tag">Technology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Natural Selection</h3>
+      <p>Organisms (and ideas, companies, products) that best fit their environment survive and reproduce. Those that don't adapt eventually go extinct.</p>
+      <p class="detail">The scientific method mirrors natural selection: hypothesize, test, keep what works, discard what doesn't. Both are iterative processes of refinement through feedback.</p>
+      <span class="tag">Biology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Cascading Failure / Butterfly Effect</h3>
+      <p>Small changes can trigger chain reactions with massive consequences. A butterfly's wings create tiny air currents that theoretically influence distant weather patterns.</p>
+      <p class="detail">In systems, one failure can cascade: a single bank failing triggers panic, causing runs on other banks. Understanding cascading failures helps you build resilient systems.</p>
+      <span class="tag">Systems / Chaos Theory</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Luck Surface Area</h3>
+      <p>You can increase your "luck" by doing more things and telling more people about what you do. Luck = opportunity x preparation. Expand both to expand your luck.</p>
+      <p class="detail">The more you put yourself out there — writing, networking, experimenting — the more serendipitous opportunities you'll encounter. Fortune favors the active.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Lindy Effect</h3>
+      <p>For non-perishable things (ideas, technologies, books), the longer something has survived, the longer it's expected to survive. A book in print for 100 years will likely last another 100.</p>
+      <p class="detail">Shakespeare has survived 400+ years and will likely survive 400 more. A trending app that's 2 years old has a much shorter expected lifespan. Longevity signals robustness.</p>
+      <span class="tag">Statistics / Strategy</span>
+    </div>
+  </div>
+
+  <!-- Ch4 Round 3: Remaining Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Potential Energy & Center of Gravity</h3>
+      <p>Potential energy is stored energy ready to be released. Center of gravity is the balance point — shift it and the system tips. Both apply to organizations and personal positioning.</p>
+      <p class="detail">A roly-poly toy always rights itself because its center of gravity is low. Organizations with a low "center of gravity" (strong fundamentals) are similarly hard to topple.</p>
+      <span class="tag">Physics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Peak</h3>
+      <p>The point of maximum output before decline begins — peak oil, peak attention, peak Facebook. Recognizing when something has peaked helps you plan for what comes next.</p>
+      <p class="detail">The Lindy effect suggests non-perishable things (books, ideas) that have survived long will survive longer. But perishable things (technologies, trends) inevitably peak and decline.</p>
+      <span class="tag">Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>In-Group Favoritism & Out-Group Bias</h3>
+      <p>We naturally favor our own group (in-group favoritism) and are suspicious of outsiders (out-group bias). This tribal instinct distorts judgment and fuels conflict.</p>
+      <p class="detail">The black-and-white fallacy (false dichotomy) reinforces this: us vs. them, good vs. evil, right vs. wrong. Reality has nuance — resist the urge to sort everything into two bins.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Zero-Sum vs. Win-Win Framing</h3>
+      <p>Zero-sum: one side's gain is the other's loss. Win-win: both sides can benefit. Polarity thinking assumes zero-sum; creative solutions find the win-win.</p>
+      <p class="detail">Most conflicts feel zero-sum but aren't. Trade is win-win: both parties value what they receive more than what they give up. Look for ways to "expand the pie" before dividing it.</p>
+      <span class="tag">Game Theory</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>2x2 Matrices & Second Law of Thermodynamics</h3>
+      <p>2x2 matrices organize any two dimensions into four quadrants for clearer thinking (Eisenhower, Radical Candor, etc.). The second law of thermodynamics — entropy always increases — underpins why systems decay without energy.</p>
+      <p class="detail">Entropy is the ultimate natural law: order requires effort, disorder is free. Every system, relationship, and organization trends toward chaos unless you actively fight it.</p>
+      <span class="tag">Frameworks / Physics</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Compound Growth Calculator -->
+  <div class="interactive-box reveal">
+    <h4>&#128200; Compound Growth: The Power of Consistency</h4>
+    <p>If you improve by just <strong id="compoundPct">1</strong>% every day, here's what happens over a year:</p>
+    <input type="range" min="0.1" max="3" step="0.1" value="1" id="compoundSlider" oninput="updateCompound(this.value)">
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
+      <span>0.1% daily</span><span>3% daily</span>
+    </div>
+    <canvas id="compoundCanvas" width="500" height="250" style="margin-top:15px;"></canvas>
+    <div style="margin-top:10px;text-align:center;">
+      <span style="font-size:1.5rem;font-weight:700;color:var(--success);" id="compoundResult">37.8x</span>
+      <span style="color:var(--text-secondary);"> improvement in one year</span>
+    </div>
+  </div>
+
+  <!-- S-Curve -->
+  <div class="diagram-container reveal">
+    <h4>The S-Curve of Growth</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Most growth follows an S-curve: slow start, rapid acceleration, then plateau.</p>
+    <canvas id="scurveCanvas" width="500" height="280" style="border:1px solid var(--border);background:var(--bg);border-radius:8px;"></canvas>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 5 ==================== -->
+<section class="chapter-section" id="ch5">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter Five</div>
+    <h2 class="chapter-title">Lies, Damned Lies, and Statistics</h2>
+    <p class="chapter-intro">Statistics can illuminate or deceive. Understanding distributions, biases in data, and the difference between correlation and causation will make you a sharper thinker.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Normal Distribution (Bell Curve)</h3>
+      <p>Many natural phenomena cluster around an average with symmetric tails. Heights, test scores, measurement errors — they all follow this pattern.</p>
+      <p class="detail">The key insight: most values are near the mean, and extreme values are rare but not impossible. Understanding the spread (standard deviation) tells you how "spread out" things are.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Survivorship Bias</h3>
+      <p>Focusing on winners while ignoring the many who failed the same way. "This college dropout became a billionaire, so college is unnecessary" ignores millions who dropped out and struggled.</p>
+      <p class="detail">WWII example: engineers wanted to armor the parts of planes that had bullet holes. Abraham Wald realized they should armor the parts WITHOUT holes — those planes didn't make it back.</p>
+      <span class="tag">Logic</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Regression to the Mean</h3>
+      <p>Extreme results tend to be followed by more average ones. A record-breaking performance is likely followed by a more typical one — not because of a "slump."</p>
+      <p class="detail">Sports Illustrated "cover jinx": athletes featured after peak performances naturally regress. It's not a curse — it's statistics.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Correlation &#8800; Causation</h3>
+      <p>Just because two things move together doesn't mean one causes the other. Ice cream sales and drowning deaths both rise in summer — heat causes both.</p>
+      <p class="detail">Hidden confounders, reverse causation, and pure coincidence can all create correlations. Always ask: is there a plausible causal mechanism?</p>
+      <span class="tag">Logic</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Simpson's Paradox</h3>
+      <p>A trend that appears in grouped data can reverse when the groups are combined. A treatment might work better in every subgroup but look worse overall.</p>
+      <p class="detail">Real example: UC Berkeley admissions appeared to discriminate against women overall, but within each department, women were admitted at equal or higher rates.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Bayesian Thinking</h3>
+      <p>Update your beliefs incrementally as new evidence arrives. Start with a prior probability, then adjust based on new data — don't overreact to single data points.</p>
+      <p class="detail">A positive test for a rare disease (1 in 10,000) might still mean you're probably fine if the test has a 1% false positive rate. The base rate matters enormously.</p>
+      <span class="tag">Probability</span>
+    </div>
+  </div>
+
+  <!-- Ch5 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Selection Bias</h3>
+      <p>When your sample isn't representative of the population. Surveying only your existing customers tells you nothing about people who chose competitors.</p>
+      <p class="detail">Nonresponse bias: people who don't answer surveys differ systematically from those who do. Response bias: people give answers they think you want to hear.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Gambler's Fallacy</h3>
+      <p>The mistaken belief that past random events affect future probabilities. A coin landing heads 10 times doesn't make tails more likely — each flip is independent.</p>
+      <p class="detail">In 1913 at Monte Carlo, black came up 26 times in a row. Gamblers lost millions betting on red, convinced it was "due." The roulette wheel has no memory.</p>
+      <span class="tag">Probability</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Base Rate Fallacy</h3>
+      <p>Ignoring the background probability (base rate) when evaluating evidence. A 99% accurate test for a rare disease (1 in 10,000) still produces mostly false positives.</p>
+      <p class="detail">Bayes' theorem corrects this: update your prior probability with new evidence proportionally. Don't overreact to a single data point without considering base rates.</p>
+      <span class="tag">Probability</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>A/B Testing</h3>
+      <p>A randomized controlled experiment comparing two variants. The gold standard for establishing causation — you change one thing and measure the effect.</p>
+      <p class="detail">Without randomization, confounding factors can fool you. The placebo effect alone can produce results — that's why control groups matter.</p>
+      <span class="tag">Experimentation</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Texas Sharpshooter Fallacy</h3>
+      <p>Drawing the target around the bullet holes after shooting. Finding patterns in random data and then claiming you predicted them.</p>
+      <p class="detail">If you test enough variables, some will correlate by pure chance. Cheese consumption correlates with bedsheet tangling deaths — but neither causes the other.</p>
+      <span class="tag">Logic</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>False Positive / False Negative</h3>
+      <p>Type I error: detecting something that isn't there (false alarm). Type II error: missing something that is there (missed detection). Every test balances these two.</p>
+      <p class="detail">Airport security is tuned for few false negatives (don't miss threats) at the cost of many false positives (flagging innocent travelers). The trade-off depends on consequences.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>p-value / Statistical Significance</h3>
+      <p>The probability of seeing results this extreme if there's actually no effect. A p-value below 0.05 is conventionally "significant" — but that threshold is arbitrary.</p>
+      <p class="detail">p-hacking: running many tests until one hits p &lt; 0.05 by chance. Test 20 jelly bean colors for acne and one will be "significant" — but it's just noise.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Replication Crisis</h3>
+      <p>Many published scientific findings fail to replicate when re-tested. Publication bias (journals prefer positive results) and data dredging (p-hacking) are major causes.</p>
+      <p class="detail">Only ~40% of psychology studies replicated successfully. Prefer meta-analyses (combining many studies) over single studies. Extraordinary claims require extraordinary evidence.</p>
+      <span class="tag">Science</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Central Limit Theorem</h3>
+      <p>No matter the shape of the original distribution, the average of many samples will form a normal distribution. The foundation of most statistical inference.</p>
+      <p class="detail">This is why the bell curve shows up everywhere: test scores, heights, measurement errors. When you average many independent random things, you always get a bell curve.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Confounding Variable</h3>
+      <p>A hidden third variable that creates a spurious correlation between two others. Ice cream sales and drowning deaths both rise in summer — heat is the confounder.</p>
+      <p class="detail">Always ask: "What else could explain this relationship?" Randomized experiments control for confounders; observational studies cannot.</p>
+      <span class="tag">Logic</span>
+    </div>
+  </div>
+
+  <!-- Ch5 Round 3: Remaining Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Anecdotal Evidence</h3>
+      <p>Individual stories and personal experiences, often vivid but statistically meaningless. "My grandpa smoked and lived to 95" doesn't disprove that smoking kills.</p>
+      <p class="detail">Anecdotes activate availability bias — a compelling story feels more real than dry data. Always ask: is this representative, or is it just a memorable outlier?</p>
+      <span class="tag">Logic</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Hypothesis & Null Hypothesis</h3>
+      <p>A hypothesis is a testable prediction. The null hypothesis assumes no effect exists — you must provide evidence strong enough to reject it. The burden of proof is on the claimant.</p>
+      <p class="detail">Statistical power measures your experiment's ability to detect a real effect. Low power means you might miss real effects (false negatives). Larger samples increase power.</p>
+      <span class="tag">Scientific Method</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Observer-Expectancy Bias & Proxy</h3>
+      <p>Researchers unconsciously influence results to match expectations (observer-expectancy bias). A proxy or surrogate endpoint is an indirect measure that stands in for the real outcome.</p>
+      <p class="detail">Double-blind experiments prevent both subjects and researchers from knowing who gets the real treatment. The placebo effect shows that belief alone can produce measurable results.</p>
+      <span class="tag">Experimentation</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Law of Large Numbers</h3>
+      <p>As sample size increases, the observed average converges on the true average. Flip a coin 10 times and you might get 70% heads; flip it 10,000 times and you'll get ~50%.</p>
+      <p class="detail">The clustering illusion is the opposite error: seeing meaningful patterns in random data from small samples. Random data naturally clumps — it doesn't mean anything.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Mean, Median & Mode</h3>
+      <p>Three ways to measure "average." Mean: sum divided by count. Median: the middle value. Mode: the most frequent. In skewed distributions (like income), they diverge dramatically.</p>
+      <p class="detail">U.S. median household income is ~$70K, but the mean is much higher because billionaires pull it up. Always ask: which "average" is being reported? The choice can be misleading.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Variance & Standard Deviation</h3>
+      <p>How spread out the data is from the mean. Low variance: tightly clustered. High variance: widely dispersed. Standard deviation is the square root of variance — in the same units as the data.</p>
+      <p class="detail">Probability distributions describe the shape of possible outcomes: normal (bell curve), log-normal (skewed), Poisson (rare events), exponential (decay). Choosing the right one matters.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Confidence Interval & Error Bars</h3>
+      <p>A range that likely contains the true value (e.g., "72 ± 3%"). Error bars visualize this uncertainty on charts. A wider interval means less certainty.</p>
+      <p class="detail">Conditional probability — the probability of A given B — is the foundation of Bayesian thinking. Bayes' theorem formally shows how to update probabilities as new evidence arrives.</p>
+      <span class="tag">Statistics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Systematic Review & Meta-Analysis</h3>
+      <p>A systematic review rigorously surveys all available studies on a question. A meta-analysis combines their results statistically — far more reliable than any single study.</p>
+      <p class="detail">Data dredging (p-hacking) and publication bias undermine individual studies. Meta-analyses compensate by pooling evidence. Always prefer meta-analyses to single studies for important decisions.</p>
+      <span class="tag">Research</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Normal Distribution -->
+  <div class="interactive-box reveal">
+    <h4>&#128202; The Bell Curve: Normal Distribution</h4>
+    <p>Adjust the standard deviation to see how it changes the shape:</p>
+    <input type="range" min="5" max="40" value="15" id="bellSlider" oninput="drawBellCurve(this.value)">
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
+      <span>Narrow (low variance)</span><span>Wide (high variance)</span>
+    </div>
+    <canvas id="bellCanvas" width="500" height="250" style="margin-top:15px;"></canvas>
+    <div style="margin-top:10px;text-align:center;color:var(--text-secondary);font-size:0.9rem;">
+      ~68% of values fall within 1 standard deviation of the mean
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Survivorship Bias Plane -->
+  <div class="diagram-container reveal">
+    <h4>Survivorship Bias: Where to Armor the Plane?</h4>
+    <svg viewBox="0 0 500 250" style="max-width:500px;">
+      <defs>
+        <linearGradient id="planeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#94a3b8"/>
+          <stop offset="100%" style="stop-color:#cbd5e1"/>
+        </linearGradient>
+      </defs>
+      <!-- Plane body -->
+      <ellipse cx="250" cy="125" rx="200" ry="40" fill="url(#planeGrad)" stroke="#64748b" stroke-width="2"/>
+      <!-- Wings -->
+      <rect x="180" y="80" width="140" height="10" rx="3" fill="#94a3b8" stroke="#64748b"/>
+      <!-- Tail -->
+      <polygon points="50,125 70,90 70,160" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+      <!-- Nose -->
+      <ellipse cx="450" cy="125" rx="15" ry="25" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+      <!-- Bullet holes (where returning planes were hit) -->
+      <circle cx="200" cy="120" r="5" fill="#ef4444" opacity="0.7"><title>Bullet hole</title></circle>
+      <circle cx="220" cy="135" r="4" fill="#ef4444" opacity="0.7"/>
+      <circle cx="280" cy="110" r="5" fill="#ef4444" opacity="0.7"/>
+      <circle cx="300" cy="130" r="4" fill="#ef4444" opacity="0.7"/>
+      <circle cx="320" cy="140" r="5" fill="#ef4444" opacity="0.7"/>
+      <circle cx="260" cy="85" r="4" fill="#ef4444" opacity="0.7"/>
+      <circle cx="350" cy="120" r="3" fill="#ef4444" opacity="0.7"/>
+      <!-- Arrow pointing to un-hit area -->
+      <text x="100" y="45" font-size="11" fill="var(--success)" font-weight="bold">ARMOR HERE!</text>
+      <line x1="140" y1="48" x2="110" y2="100" stroke="var(--success)" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <text x="300" y="200" font-size="11" fill="var(--danger)" font-weight="bold">Bullet holes on returning planes</text>
+      <text x="100" y="220" font-size="10" fill="var(--text-secondary)">Planes hit here didn't return — that's where you need armor!</text>
+    </svg>
+  </div>
+
+  <div class="quiz-section reveal">
+    <h4>&#127919; Chapter 5 Quiz</h4>
+    <div class="quiz-question">Ice cream sales and drowning deaths both increase in summer. This is an example of:</div>
+    <div class="quiz-options">
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q5')">Causation</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'correct','q5')">Correlation without causation</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q5')">Simpson's Paradox</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q5')">Survivorship Bias</button>
+    </div>
+    <div class="quiz-result" id="q5-result"></div>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 6 ==================== -->
+<section class="chapter-section" id="ch6">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter Six</div>
+    <h2 class="chapter-title">Decisions, Decisions</h2>
+    <p class="chapter-intro">Life is a series of decisions under uncertainty. These frameworks help you make better choices by weighing probabilities, costs, benefits, and second-order effects.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Cost-Benefit Analysis</h3>
+      <p>Systematically weigh the expected costs against the expected benefits. Simple in theory, profound in practice — most people skip this step.</p>
+      <p class="detail">The key is being honest about ALL costs (including opportunity costs, time, stress) and ALL benefits (including non-monetary ones like learning and relationships).</p>
+      <span class="tag">Decision Making</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Expected Value</h3>
+      <p>The probability-weighted average of all possible outcomes. A 10% chance of winning $100 has an expected value of $10.</p>
+      <p class="detail">Always think in expected value, not just best-case or worst-case. A decision that's slightly negative most of the time but hugely positive rarely can still have great expected value.</p>
+      <span class="tag">Probability</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Decision Trees</h3>
+      <p>Map out choices, chance events, and outcomes as a branching tree. Visualizing the full decision space reveals options and risks you might miss.</p>
+      <p class="detail">At each branch, assign probabilities and values. Work backwards from outcomes to determine the expected value of each initial choice.</p>
+      <span class="tag">Analysis</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Black Swan Events</h3>
+      <p>Rare, unpredictable events with massive impact. 9/11, COVID-19, the iPhone. You can't predict them, but you can build systems that survive (or benefit from) them.</p>
+      <p class="detail">Related to fat tails: real-world distributions have more extreme events than the bell curve predicts. Plan for "what if everything goes wrong" scenarios.</p>
+      <span class="tag">Nassim Taleb</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Maslow's Hammer</h3>
+      <p>"If all you have is a hammer, everything looks like a nail." Having only one mental model makes you force-fit it to every situation.</p>
+      <p class="detail">This is precisely why you need a diverse toolkit of mental models. The more models you know, the more likely you'll find the right one for each situation.</p>
+      <span class="tag">Meta-Model</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Reversible vs. Irreversible Decisions</h3>
+      <p>Irreversible decisions (selling your business, having a kid) deserve deep analysis. Reversible ones (trying a new tool, launching a feature) should be made quickly.</p>
+      <p class="detail">Jeff Bezos calls these "one-way doors" vs. "two-way doors." Most decisions are two-way doors — decide quickly, iterate. Save deliberation for one-way doors.</p>
+      <span class="tag">Decision Making</span>
+    </div>
+  </div>
+
+  <!-- Ch6 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Systems Thinking</h3>
+      <p>Understanding how parts of a system interact and influence each other, rather than analyzing components in isolation. The whole is different from the sum of its parts.</p>
+      <p class="detail">Le Chatelier's principle: a system at equilibrium will adjust to partially counteract any change. Push one part and the system pushes back in unexpected ways.</p>
+      <span class="tag">Systems</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Groupthink</h3>
+      <p>When a group prioritizes harmony and consensus over critical evaluation. Dissenting voices are suppressed, leading to poor decisions that no individual would make alone.</p>
+      <p class="detail">Related: the bandwagon effect — the tendency to follow the crowd. The more people who believe something, the more others jump on, regardless of evidence.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Sensitivity Analysis</h3>
+      <p>Testing how sensitive your conclusion is to changes in assumptions. If a small change flips the outcome, your decision is fragile and needs more investigation.</p>
+      <p class="detail">For any analysis: vary each input ±20% and see if the conclusion changes. If it does, that input is critical — get better data on it before deciding.</p>
+      <span class="tag">Analysis</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Monte Carlo Simulation</h3>
+      <p>Run thousands of random simulations to understand the range of possible outcomes. Instead of a single forecast, you get a probability distribution of results.</p>
+      <p class="detail">Named after the Monte Carlo casino. Used in finance, engineering, and AI. When the system is too complex for closed-form math, simulate it instead.</p>
+      <span class="tag">Mathematics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Counterfactual Thinking</h3>
+      <p>Imagining "what if things had been different?" to evaluate decisions. Good for learning from mistakes — but beware of hindsight bias making past events seem more predictable.</p>
+      <p class="detail">Thought experiments let you explore consequences without real risk. Einstein imagined riding a beam of light — a thought experiment that led to special relativity.</p>
+      <span class="tag">Decision Making</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Lateral Thinking</h3>
+      <p>Approaching problems indirectly and creatively, generating many possibilities (divergent thinking) before narrowing to the best (convergent thinking).</p>
+      <p class="detail">Crowdsourcing and prediction markets harness collective lateral thinking. Superforecasters — people who consistently outpredict experts — combine many perspectives.</p>
+      <span class="tag">Creativity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Unknown Unknowns</h3>
+      <p>Things you don't even know that you don't know. Known unknowns can be researched; unknown unknowns blindside you. Scenario analysis helps surface them.</p>
+      <p class="detail">Donald Rumsfeld's taxonomy: known knowns, known unknowns, and unknown unknowns. Fat-tailed distributions remind us that extreme surprises are more common than we think.</p>
+      <span class="tag">Risk</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Scenario Analysis</h3>
+      <p>Systematically exploring multiple possible futures (best case, worst case, most likely) to prepare for uncertainty rather than betting on a single forecast.</p>
+      <p class="detail">Combine with sensitivity analysis: which assumptions matter most? Then focus your research and contingency planning on those critical variables.</p>
+      <span class="tag">Strategy</span>
+    </div>
+  </div>
+
+  <!-- Ch6 Round 3: Remaining Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Pro-Con List & Grass-is-Greener</h3>
+      <p>The simplest decision tool: list pros and cons. But beware the grass-is-greener mentality — we tend to accentuate positives of alternatives and overlook their negatives.</p>
+      <p class="detail">The grass looks greener on the other side because you're not close enough to see the weeds. Apply the same scrutiny to alternatives that you apply to your current situation.</p>
+      <span class="tag">Decision Making</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Garbage In, Garbage Out</h3>
+      <p>Bad inputs produce bad outputs, no matter how sophisticated your analysis. A perfect cost-benefit model built on wrong assumptions gives a precisely wrong answer.</p>
+      <p class="detail">Inflation erodes future money's value — failing to account for it is classic garbage-in. Always challenge your inputs: are they current? Measured correctly? Representative?</p>
+      <span class="tag">Analysis</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Utility Values & Utilitarianism</h3>
+      <p>Utility values capture total relative preference, not just monetary cost. Utilitarianism holds that the most ethical decision creates the most total utility across all affected parties.</p>
+      <p class="detail">A decision tree with utility values instead of dollars can capture things like happiness, stress, and fulfillment — not just financial outcomes. Money isn't the only currency.</p>
+      <span class="tag">Philosophy / Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Local vs. Global Optimum</h3>
+      <p>A local optimum is the best solution in the immediate neighborhood; a global optimum is the best overall. Hill-climbing algorithms can get stuck on local peaks, never finding the highest mountain.</p>
+      <p class="detail">In careers, staying at a "good enough" job is a local optimum. Taking a temporary pay cut for a better long-term trajectory might reach the global optimum. Sometimes you have to go down to go up.</p>
+      <span class="tag">Optimization</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Hysteresis</h3>
+      <p>A system's current state depends on its history, not just current conditions. Like a sponge that stays wet even after you stop pouring water — the effect persists after the cause is removed.</p>
+      <p class="detail">Economic examples: unemployment can remain high even after a recession ends. Organizational culture persists long after the founders leave. History leaves imprints that resist reversal.</p>
+      <span class="tag">Systems</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Expected Value Calculator -->
+  <div class="interactive-box reveal">
+    <h4>&#127922; Expected Value Calculator</h4>
+    <p>Should you take the gamble? Adjust the probability and payoff:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:15px 0;">
+      <div>
+        <label>Probability of winning: <strong id="evProb">30%</strong></label>
+        <input type="range" min="1" max="99" value="30" id="evProbSlider" oninput="updateEV()">
+      </div>
+      <div>
+        <label>Winning payout: <strong id="evWin">$500</strong></label>
+        <input type="range" min="10" max="1000" step="10" value="500" id="evWinSlider" oninput="updateEV()">
+      </div>
+      <div>
+        <label>Cost to play: <strong id="evCost">$100</strong></label>
+        <input type="range" min="10" max="500" step="10" value="100" id="evCostSlider" oninput="updateEV()">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+          <div style="font-size:0.8rem;color:var(--text-secondary);">Expected Value:</div>
+          <div style="font-size:2rem;font-weight:800;" id="evResult">+$50</div>
+          <div style="font-size:0.85rem;font-weight:600;" id="evVerdict">Take the bet!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 7 ==================== -->
+<section class="chapter-section" id="ch7">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter Seven</div>
+    <h2 class="chapter-title">Dealing with Conflict</h2>
+    <p class="chapter-intro">Conflicts are inevitable. Game theory and negotiation models help you navigate them strategically, find win-win solutions, and avoid destructive standoffs.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Prisoner's Dilemma</h3>
+      <p>Two parties would both benefit from cooperating, but each has an incentive to defect. The rational individual choice leads to a worse collective outcome.</p>
+      <p class="detail">Real examples: arms races, price wars, environmental agreements. The key insight: when the game repeats (iterated prisoner's dilemma), cooperation can emerge.</p>
+      <span class="tag">Game Theory</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Nash Equilibrium</h3>
+      <p>A state where no player can improve their outcome by changing strategy alone. Everyone is doing their "best response" to everyone else.</p>
+      <p class="detail">Traffic routes naturally reach a Nash equilibrium: no individual driver can reduce their commute by switching routes. But the equilibrium isn't always optimal for everyone.</p>
+      <span class="tag">Game Theory</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Zero-Sum vs. Non-Zero-Sum</h3>
+      <p>Zero-sum: one side's gain is the other's loss (poker). Non-zero-sum: both sides can win or lose (trade, negotiation). Most of life is non-zero-sum.</p>
+      <p class="detail">Reframing conflicts from zero-sum to non-zero-sum (finding "the bigger pie") is one of the most valuable negotiation skills.</p>
+      <span class="tag">Game Theory</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Tit for Tat</h3>
+      <p>Start by cooperating, then mirror whatever your opponent did last round. Simple, forgiving, and retaliatory — it consistently wins iterated prisoner's dilemma tournaments.</p>
+      <p class="detail">Key properties: it's nice (never defects first), retaliatory (punishes defection immediately), forgiving (returns to cooperation), and clear (easy for opponents to understand).</p>
+      <span class="tag">Game Theory</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>BATNA</h3>
+      <p>Best Alternative To a Negotiated Agreement. Your power in any negotiation comes from your willingness to walk away — and having a good alternative if you do.</p>
+      <p class="detail">Before any negotiation, determine your BATNA. The better your alternative, the stronger your negotiating position. Always improve your BATNA before negotiating.</p>
+      <span class="tag">Negotiation</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Mutually Assured Destruction</h3>
+      <p>When both sides have the power to destroy each other, neither acts — creating a tense but stable peace. The paradox: overwhelming destructive power prevents conflict.</p>
+      <p class="detail">Beyond nuclear weapons: business "poison pills," regulatory retaliation, and social "mutually assured embarrassment" all work on this principle.</p>
+      <span class="tag">Strategy</span>
+    </div>
+  </div>
+
+  <!-- Ch7 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Reciprocity</h3>
+      <p>People feel obligated to return favors. One of Cialdini's six influence principles. Free samples, first favors, and gifts create a powerful sense of obligation.</p>
+      <p class="detail">Political donors get far more access to Congress than regular constituents — reciprocity at scale. The obligation to reciprocate is one of the strongest social forces.</p>
+      <span class="tag">Influence</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Social Proof</h3>
+      <p>We look to others' behavior as evidence of correct action. "If everyone's doing it, it must be right." Reviews, testimonials, and crowds all leverage social proof.</p>
+      <p class="detail">Part of Cialdini's six principles, alongside scarcity (FOMO), authority (expert endorsement), liking, commitment/consistency, and reciprocity.</p>
+      <span class="tag">Influence</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Scarcity / FOMO</h3>
+      <p>Things become more desirable when they're scarce or about to disappear. "Only 3 left!" and "Limited time offer!" exploit this bias to drive action.</p>
+      <p class="detail">Fear of Missing Out (FOMO) drives social media addiction, impulse purchases, and investment bubbles. Recognize when scarcity is real vs. manufactured.</p>
+      <span class="tag">Influence</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Dark Patterns</h3>
+      <p>Design techniques that manipulate users against their own interests. Subscription cancellation mazes, hidden costs at checkout, confusing opt-out flows.</p>
+      <p class="detail">Related: Trojan horse (concealing threats inside something appealing), bait-and-switch (advertising one thing, delivering another), and Potemkin villages (facades hiding reality).</p>
+      <span class="tag">Ethics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Broken Windows Theory</h3>
+      <p>Visible signs of disorder encourage more disorder. One broken window leads to more. Graffiti invites more graffiti. Small violations, left unchecked, escalate.</p>
+      <p class="detail">Related to the slippery slope argument and the gateway drug theory. The domino effect: one small breach cascades into larger ones when norms erode.</p>
+      <span class="tag">Sociology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>War of Attrition / Pyrrhic Victory</h3>
+      <p>A prolonged conflict that depletes both sides. A Pyrrhic victory is winning a battle at such devastating cost that the victory is effectively a defeat.</p>
+      <p class="detail">Guerrilla warfare uses this: a smaller, nimbler force wears down a larger one through persistence. "Generals always fight the last war" — past strategies may not fit the present.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Straw Man / Ad Hominem</h3>
+      <p>Straw man: misrepresenting someone's argument to make it easier to attack. Ad hominem: attacking the person rather than their argument. Both are logical fallacies.</p>
+      <p class="detail">FUD (Fear, Uncertainty, Doubt) is a broader tactic — using emotional manipulation rather than rational argument. Always address the strongest version of an opposing argument.</p>
+      <span class="tag">Logic / Rhetoric</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Exit Strategy / Burn the Boats</h3>
+      <p>Exit strategy: always know how you'll get out before you get in. Burn the boats: the opposite — eliminate retreat to force total commitment. Both are valid in different contexts.</p>
+      <p class="detail">A Hail Mary is a last-ditch, long-shot effort when conventional options are exhausted. Know which mode you're in: calculated retreat or total commitment.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Social Norms vs. Market Norms</h3>
+      <p>Favors operate on social norms (goodwill, relationships). Introducing money shifts to market norms and can destroy social motivation. Paying people for favors can backfire.</p>
+      <p class="detail">A daycare fined parents for late pickups — lateness increased. The fine converted a social obligation ("don't inconvenience teachers") into a market transaction ("I'm paying for extra time").</p>
+      <span class="tag">Behavioral Economics</span>
+    </div>
+  </div>
+
+  <!-- Ch7 Round 3: Remaining Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Arms Race</h3>
+      <p>An escalating competition where each side increases spending/effort to keep up with the other, leaving both worse off. A classic prisoner's dilemma in slow motion.</p>
+      <p class="detail">Game theory provides the framework for understanding all strategic interactions. Arms races occur in military spending, advertising budgets, education credentials, and technology.</p>
+      <span class="tag">Game Theory</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Commitment, Liking & Authority</h3>
+      <p>Three of Cialdini's six influence principles. Commitment: small agreements snowball into large ones. Liking: we're swayed by people we like. Authority: we defer to perceived experts.</p>
+      <p class="detail">Salespeople use all three: build rapport (liking), get small yeses (commitment), then invoke expertise (authority). Awareness of these tactics is your best defense against manipulation.</p>
+      <span class="tag">Influence</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Ultimatum Game & Justice</h3>
+      <p>One player proposes a split; the other accepts or both get nothing. Rational players should accept any offer, but people reject "unfair" ones — fairness matters more than maximizing payoff.</p>
+      <p class="detail">Distributive justice focuses on fair distribution of outcomes. Procedural justice focuses on fair processes. People accept unfavorable outcomes more readily when the process feels fair.</p>
+      <span class="tag">Game Theory / Ethics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Appeal to Emotion & FUD</h3>
+      <p>Persuading through emotions rather than logic. FUD (Fear, Uncertainty, and Doubt) is a specific tactic — spreading fear to prevent action or change.</p>
+      <p class="detail">FUD is commonly used in politics, marketing, and corporate competition. "This new technology is risky and unproven!" plays on uncertainty to maintain the status quo.</p>
+      <span class="tag">Rhetoric</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Deterrence & Carrot-and-Stick</h3>
+      <p>Deterrence uses threats to prevent action. Carrot-and-stick combines rewards (carrots) with punishments (sticks). Both shape behavior through incentives.</p>
+      <p class="detail">Containment prevents a problem from spreading further. "Stop the bleeding" means quick action to stabilize before fixing root causes. Quarantine isolates threats to prevent contagion.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Flypaper Theory & Loss Leader</h3>
+      <p>Flypaper theory: attract enemies/problems to a specific location away from valuable assets. Loss leader: sell one product at a loss to drive demand for profitable complementary products.</p>
+      <p class="detail">Appeasement — making concessions to avoid conflict — often backfires by encouraging further demands. Knowing when to concede vs. when to stand firm is a critical strategic judgment.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Red Line & Nuclear Option</h3>
+      <p>A red line is a figurative boundary that triggers retaliation if crossed. The nuclear option signals willingness to take extreme, destructive action. Both are deterrence through credible threats.</p>
+      <p class="detail">Zero-tolerance policies enforce strict consequences for any violation. "Call your bluff" challenges someone to prove their threat is real — effective when the threat is hollow, dangerous when it's not.</p>
+      <span class="tag">Conflict</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Endgame & Punching Above Your Weight</h3>
+      <p>The endgame is the final stage of a conflict where resolution is in sight. Punching above your weight means performing at a level beyond your apparent resources or position.</p>
+      <p class="detail">"Generals always fight the last war" — defaulting to past strategies that may not fit the present conflict. Each situation is unique; adapt your approach rather than replaying old playbooks.</p>
+      <span class="tag">Strategy</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Prisoner's Dilemma Game -->
+  <div class="interactive-box reveal">
+    <h4>&#127918; Play: The Prisoner's Dilemma</h4>
+    <p>You and your partner are arrested. Each can cooperate (stay silent) or defect (betray). Choose your strategy:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:400px;margin:15px auto;background:var(--border);border-radius:8px;overflow:hidden;">
+      <div style="background:var(--card-bg);padding:15px;text-align:center;font-weight:700;font-size:0.8rem;">You \ Partner</div>
+      <div style="background:var(--card-bg);padding:15px;text-align:center;font-size:0.8rem;"><strong>Cooperate / Defect</strong></div>
+      <div style="background:var(--card-bg);padding:15px;text-align:center;font-size:0.8rem;"><strong>You Cooperate</strong></div>
+      <div style="background:var(--card-bg);padding:15px;text-align:center;font-size:0.8rem;">Both: -1yr / You:-3, They:0</div>
+      <div style="background:var(--card-bg);padding:15px;text-align:center;font-size:0.8rem;"><strong>You Defect</strong></div>
+      <div style="background:var(--card-bg);padding:15px;text-align:center;font-size:0.8rem;">You:0, They:-3 / Both: -2yr</div>
+    </div>
+    <div class="controls" style="justify-content:center;">
+      <button onclick="playPD('cooperate')">Cooperate</button>
+      <button onclick="playPD('defect')">Defect</button>
+    </div>
+    <div id="pdResult" style="margin-top:15px;text-align:center;font-weight:600;min-height:24px;"></div>
+    <div style="margin-top:5px;text-align:center;font-size:0.85rem;color:var(--text-secondary);" id="pdScore">Score: 0 | Rounds: 0</div>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 8 ==================== -->
+<section class="chapter-section" id="ch8">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter Eight</div>
+    <h2 class="chapter-title">Unlocking People's Potential</h2>
+    <p class="chapter-intro">Whether managing a team or developing yourself, these models illuminate how talent grows, why experts stall, and how to build high-performing organizations.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Dunning-Kruger Effect</h3>
+      <p>Beginners overestimate their ability; experts underestimate theirs. The less you know, the less you realize how much you don't know.</p>
+      <p class="detail">The dangerous middle ground: knowing enough to be confident but not enough to be competent. True expertise comes with an appreciation of complexity.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Peter Principle</h3>
+      <p>People are promoted based on current performance, not future competence — rising until they reach a level where they're no longer effective.</p>
+      <p class="detail">A brilliant engineer may be promoted to management and fail — not because they're bad, but because management requires entirely different skills.</p>
+      <span class="tag">Management</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Growth Mindset</h3>
+      <p>The belief that abilities can be developed through effort and learning (vs. fixed mindset: talent is innate). People with growth mindset embrace challenges and persist.</p>
+      <p class="detail">Carol Dweck's research shows that praising effort over talent produces more resilient learners. "I can't do this YET" vs. "I can't do this."</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Deliberate Practice</h3>
+      <p>Not just repetition — purposeful, focused practice at the edge of your ability, with immediate feedback. The path from novice to expert in any field.</p>
+      <p class="detail">10,000 hours of mindless repetition won't make you an expert. 10,000 hours of focused, uncomfortable practice with coaching will.</p>
+      <span class="tag">Mastery</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Imposter Syndrome</h3>
+      <p>The feeling that you're a fraud who'll be "found out" despite evidence of competence. Common among high achievers — the opposite of Dunning-Kruger.</p>
+      <p class="detail">The antidote: recognize that many successful people feel this way. Your awareness of what you don't know is actually a sign of competence.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>10x vs. 1x Performers</h3>
+      <p>In knowledge work, the best performers aren't 10% better — they can be 10x more productive. Finding and empowering these people transforms organizations.</p>
+      <p class="detail">The key is removing obstacles, providing autonomy, and matching people to tasks where their unique strengths multiply. One great hire can outperform ten average ones.</p>
+      <span class="tag">Management</span>
+    </div>
+  </div>
+
+  <!-- Ch8 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Radical Candor</h3>
+      <p>The best feedback combines caring personally with challenging directly. A 2x2: Radical Candor, Ruinous Empathy (nice but unhelpful), Obnoxious Aggression, Manipulative Insincerity.</p>
+      <p class="detail">Most managers default to Ruinous Empathy — being too nice to give hard feedback. But withholding honest feedback isn't kind — it prevents growth.</p>
+      <span class="tag">Management</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Maslow's Hierarchy of Needs</h3>
+      <p>People must satisfy basic needs (safety, food) before pursuing higher ones (belonging, esteem, self-actualization). You can't motivate with purpose when people fear for their jobs.</p>
+      <p class="detail">In organizations: ensure psychological safety and fair compensation before expecting passion and creativity. Meet people where they are on the hierarchy.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Dunbar's Number</h3>
+      <p>Humans can maintain ~150 stable social relationships. Beyond that, organizations need formal structures, rules, and hierarchies to function.</p>
+      <p class="detail">This explains why startups feel different after ~150 people. Amazon fights this with "two-pizza teams." The mythical man-month: adding people to a late project makes it later.</p>
+      <span class="tag">Sociology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Pygmalion / Golem Effect</h3>
+      <p>High expectations boost performance (Pygmalion); low expectations reduce it (Golem). Teachers who expect students to excel get better results — even when students are randomly assigned.</p>
+      <p class="detail">As a manager, your expectations shape reality. Expect greatness from your team and provide support to achieve it. Low expectations become self-fulfilling prophecies.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Bystander Effect / DRI</h3>
+      <p>The more people present, the less likely any individual is to help — diffusion of responsibility. The fix: assign a Directly Responsible Individual (DRI) for every action item.</p>
+      <p class="detail">Apple uses DRIs for everything. "Who owns this?" eliminates the assumption that someone else will handle it. If everyone is responsible, no one is.</p>
+      <span class="tag">Management</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Foxes vs. Hedgehogs</h3>
+      <p>"The fox knows many things; the hedgehog knows one big thing." Foxes (generalists) draw from diverse knowledge; hedgehogs (specialists) go deep. Both have value.</p>
+      <p class="detail">In forecasting, foxes consistently outperform hedgehogs because they integrate multiple perspectives. But deep expertise matters in execution. Match the role to the type.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Manager's vs. Maker's Schedule</h3>
+      <p>Managers operate in 1-hour blocks (meetings). Makers need 4+ hour blocks (deep work). A single meeting in the middle of a maker's afternoon can destroy the whole block.</p>
+      <p class="detail">Paul Graham: for makers, meetings are a disaster. Organizations should protect maker time by clustering meetings and preserving uninterrupted blocks.</p>
+      <span class="tag">Productivity</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Spacing Effect</h3>
+      <p>Learning is more effective when spread over time than crammed into one session. Spaced repetition leverages this for long-term retention.</p>
+      <p class="detail">This is why weekly 1-on-1s are better than annual reviews, why daily practice beats weekend marathons, and why flashcard apps space reviews optimally.</p>
+      <span class="tag">Learning</span>
+    </div>
+  </div>
+
+  <!-- Ch8 Round 3: Remaining Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Joy's Law</h3>
+      <p>"No matter who you are, most of the smartest people work for someone else." The best talent is always distributed, not concentrated in your organization.</p>
+      <p class="detail">This is why open source, crowdsourcing, and external collaboration are so powerful. Don't assume you have all the answers internally — tap into broader talent pools.</p>
+      <span class="tag">Management</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Introverts, Extroverts & Nature vs. Nurture</h3>
+      <p>People have different inherent personality traits (introverts/extroverts) shaped by both genetics (nature) and environment (nurture). Great managers recognize and adapt to these differences.</p>
+      <p class="detail">IQ measures cognitive ability; EQ (emotional quotient) measures emotional intelligence — self-awareness, empathy, social skills. Both matter, but EQ is often a better predictor of leadership success.</p>
+      <span class="tag">Psychology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Generalists vs. Specialists</h3>
+      <p>Generalists have broad knowledge across domains; specialists go deep in one area. Like a butcher knife (broad) vs. a paring knife (precise) — different tools for different jobs.</p>
+      <p class="detail">Commandos, infantry, and police represent three organizational phases: commandos explore, infantry scale, police maintain. Each phase needs a different type of person.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Managing to the Person</h3>
+      <p>Customize your management approach to each individual's needs, strengths, and growth areas. No one-size-fits-all approach works for every team member.</p>
+      <p class="detail">Strategy vs. tactics: strategy is the what and why; tactics are the how. Good managers help with strategy and let people choose their own tactics. Weekly one-on-ones are the vehicle for this personalized coaching.</p>
+      <span class="tag">Management</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Institutional Knowledge & Power Vacuum</h3>
+      <p>Institutional knowledge is the collective know-how embedded in an organization's people, processes, and culture. When key people leave, a power vacuum forms — and someone will fill it.</p>
+      <p class="detail">A unicorn candidate is someone with an unrealistically specific set of requirements — they don't exist. Broaden your criteria and develop people internally instead.</p>
+      <span class="tag">Organizations</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Consequence-Conviction Matrix</h3>
+      <p>A 2x2: high/low conviction vs. high/low consequence. Delegate low-consequence decisions readily. Only override when both your conviction AND the consequences are high.</p>
+      <p class="detail">This helps leaders avoid micromanaging (overriding on low-consequence decisions) while ensuring critical decisions get proper attention and debate.</p>
+      <span class="tag">Management</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Hindsight Bias</h3>
+      <p>After learning an outcome, we believe we "knew it all along." This distorts learning from mistakes because everything seems obvious in retrospect.</p>
+      <p class="detail">Fight hindsight bias by documenting your predictions and reasoning before outcomes are known. Review your track record honestly, including the things you got wrong and why.</p>
+      <span class="tag">Cognitive Bias</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Culture & High/Low Context</h3>
+      <p>Culture is the shared beliefs, patterns, and norms of a group. High-context cultures communicate implicitly (Japan); low-context cultures communicate explicitly (Germany).</p>
+      <p class="detail">Winning hearts and minds means appealing to both emotion and reason. Loyalists are devoted to the mission; mercenaries are transactional. Great cultures create loyalists. Boots on the ground means leading by presence, not from afar.</p>
+      <span class="tag">Organizations</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>The Mythical Man-Month</h3>
+      <p>Adding people to a late project makes it later. New team members need onboarding, communication overhead grows quadratically, and coordination costs eat up the extra capacity.</p>
+      <p class="detail">Beyond Dunbar's number (~150), organizations need formal structures. Amazon fights this with "two-pizza teams" — small enough that two pizzas feed the whole team.</p>
+      <span class="tag">Software / Management</span>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Maslow's Hierarchy -->
+  <div class="diagram-container reveal">
+    <h4>Maslow's Hierarchy of Needs</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Lower needs must be met before higher ones can be pursued:</p>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;padding:12px 20px;border-radius:8px;width:160px;text-align:center;font-weight:700;font-size:0.8rem;">Self-Actualization<br><span style="font-weight:400;font-size:0.7rem;">creativity, purpose</span></div>
+      <div style="background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;padding:12px 20px;border-radius:8px;width:220px;text-align:center;font-weight:700;font-size:0.8rem;">Esteem<br><span style="font-weight:400;font-size:0.7rem;">recognition, respect</span></div>
+      <div style="background:linear-gradient(135deg,#10b981,#34d399);color:#fff;padding:12px 20px;border-radius:8px;width:280px;text-align:center;font-weight:700;font-size:0.8rem;">Love & Belonging<br><span style="font-weight:400;font-size:0.7rem;">friends, family, community</span></div>
+      <div style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#000;padding:12px 20px;border-radius:8px;width:340px;text-align:center;font-weight:700;font-size:0.8rem;">Safety & Security<br><span style="font-weight:400;font-size:0.7rem;">job, health, property</span></div>
+      <div style="background:linear-gradient(135deg,#ef4444,#f87171);color:#fff;padding:12px 20px;border-radius:8px;width:400px;text-align:center;font-weight:700;font-size:0.8rem;">Physiological Needs<br><span style="font-weight:400;font-size:0.7rem;">food, water, shelter, sleep</span></div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE: Dunning-Kruger Curve -->
+  <div class="diagram-container reveal">
+    <h4>The Dunning-Kruger Effect</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Hover over the curve to see each stage of the journey from novice to expert:</p>
+    <canvas id="dkCanvas" width="500" height="300" style="border:1px solid var(--border);background:var(--bg);border-radius:8px;cursor:crosshair;"></canvas>
+    <div id="dkLabel" style="margin-top:10px;font-weight:600;min-height:24px;text-align:center;color:var(--primary);"></div>
+  </div>
+</section>
+
+<!-- ==================== CHAPTER 9 ==================== -->
+<section class="chapter-section" id="ch9">
+  <div class="chapter-header">
+    <div class="chapter-number">Chapter Nine</div>
+    <h2 class="chapter-title">Flex Your Market Power</h2>
+    <p class="chapter-intro">Understand the forces that shape markets: supply and demand, competitive advantages, moats, disruption, and the strategies that build lasting business value.</p>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Supply and Demand</h3>
+      <p>The fundamental force of markets. When supply exceeds demand, prices fall. When demand exceeds supply, prices rise. Equilibrium is where they meet.</p>
+      <p class="detail">Applies to jobs (skills in demand pay more), housing (scarce supply in cities), and even attention (content supply exploding, attention scarce).</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Competitive Moat</h3>
+      <p>A sustainable advantage that protects a business from competitors — like a moat around a castle. Types: brand, network effects, cost advantages, switching costs, patents.</p>
+      <p class="detail">Warren Buffett's key investment criteria: does this business have a wide, deep moat? Can competitors easily copy what they do? The wider the moat, the more durable the business.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Disruption</h3>
+      <p>Upstarts can topple incumbents by starting in overlooked markets with simpler/cheaper products, then improving until they capture the mainstream.</p>
+      <p class="detail">Clayton Christensen's model: Netflix started with DVD-by-mail for niche audiences, then streaming disrupted Blockbuster. The incumbent's strength becomes its weakness.</p>
+      <span class="tag">Innovation</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Economies of Scale</h3>
+      <p>As production increases, cost per unit decreases. This is why large companies can undercut small ones and why winners tend to keep winning.</p>
+      <p class="detail">But there are also diseconomies of scale: bureaucracy, coordination costs, and loss of agility. Amazon fights this with "two-pizza teams."</p>
+      <span class="tag">Business</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>First-Mover Advantage</h3>
+      <p>Being first to market can build brand recognition, customer habits, and network effects. But it also means absorbing the cost of educating the market.</p>
+      <p class="detail">Not always decisive: Google wasn't the first search engine, Facebook wasn't the first social network. Sometimes the fast follower wins by learning from the pioneer's mistakes.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Barriers to Entry</h3>
+      <p>Factors that make it hard for new competitors to enter a market: capital requirements, regulations, patents, brand loyalty, network effects.</p>
+      <p class="detail">High barriers protect incumbents but can be disrupted by technology shifts. The internet dramatically lowered barriers in media, retail, and software.</p>
+      <span class="tag">Economics</span>
+    </div>
+  </div>
+
+  <!-- Ch9 Additional Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Product/Market Fit</h3>
+      <p>When your product meets a strong market demand so well that it practically sells itself. The most important milestone for any startup — everything else is secondary until you find it.</p>
+      <p class="detail">Like a resonant frequency: when you hit the right fit, results amplify dramatically. Customer development — rapid experimentation with real users — is how you find it.</p>
+      <span class="tag">Startup</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>OODA Loop</h3>
+      <p>Observe, Orient, Decide, Act — then repeat. A rapid decision cycle from military strategy. The side that cycles through OODA faster gains the advantage.</p>
+      <p class="detail">In business: observe market signals, orient your understanding, decide on action, act quickly, then observe the results. Speed of iteration is a competitive advantage.</p>
+      <span class="tag">Military / Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Crossing the Chasm</h3>
+      <p>The gap between early adopters (who love new things) and the early majority (who need proven solutions). Many products die in this chasm.</p>
+      <p class="detail">Geoffrey Moore's solution: focus on a beachhead — one narrow segment you can dominate completely. Then expand outward from that foothold into adjacent segments.</p>
+      <span class="tag">Technology</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Switching Costs / Lock-in</h3>
+      <p>High switching costs trap customers with a product even when better alternatives exist. All your data is in one platform; migrating is painful. That's lock-in.</p>
+      <p class="detail">Switching costs are a powerful moat. Apple's ecosystem, enterprise software contracts, and social networks all benefit from the friction of switching.</p>
+      <span class="tag">Business</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Regulatory Capture</h3>
+      <p>When regulators end up serving the interests of the industry they're supposed to regulate. The regulated become the regulators' most important constituency.</p>
+      <p class="detail">Industries lobby for regulations that create barriers to entry for competitors. Licensing requirements, compliance costs, and complex rules all favor well-resourced incumbents.</p>
+      <span class="tag">Economics / Politics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Jobs to Be Done</h3>
+      <p>People don't buy products — they "hire" them to do a job. Understanding the real job customers need done leads to better products than analyzing demographics.</p>
+      <p class="detail">A milkshake's competition isn't other milkshakes — it's bananas, donuts, and boredom. The job: "make my commute less boring and keep me full until lunch."</p>
+      <span class="tag">Innovation</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Pivot</h3>
+      <p>A strategic change of direction when your current approach isn't working. Not giving up — changing course based on what you've learned.</p>
+      <p class="detail">Instagram started as Burbn (a location check-in app). Slack started as a gaming company. YouTube started as a video dating site. The pivot is often where the real opportunity lives.</p>
+      <span class="tag">Startup</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Arbitrage</h3>
+      <p>Exploiting price differences for the same thing in different markets. Buy low here, sell high there. The foundation of many business models.</p>
+      <p class="detail">Peter Thiel's contrarian framework: the biggest opportunities come from being contrarian AND right. If everyone agrees with you, there's no arbitrage — the opportunity is priced in.</p>
+      <span class="tag">Economics</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Beachhead Strategy</h3>
+      <p>Establish a foothold in one small, winnable segment before expanding. D-Day's Normandy landing was a beachhead for liberating Europe. Startups need their Normandy.</p>
+      <p class="detail">Facebook started at Harvard, then Ivy League schools, then all colleges, then everyone. Amazon started with just books. Dominate a niche, then expand.</p>
+      <span class="tag">Strategy</span>
+    </div>
+  </div>
+
+  <!-- Ch9 Round 3: Remaining Missing Models -->
+  <div class="model-grid">
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Consensus-Contrarian Matrix</h3>
+      <p>A 2x2: consensus vs. contrarian, right vs. wrong. Being contrarian AND right produces outsized returns. Being contrarian and wrong is just being wrong. Most value is in the non-obvious truths.</p>
+      <p class="detail">Peter Thiel's concept of a "secret": an important truth that few people agree with. "What important truth do very few people agree with you on?" The best opportunities hide in these secrets.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Why Now? & Simultaneous Invention</h3>
+      <p>"Why now?" is the critical question for any new idea: why is this the right moment? Simultaneous invention — multiple people independently discovering the same thing — suggests the timing was ripe.</p>
+      <p class="detail">Calculus was invented independently by Newton and Leibniz. When conditions are right, ideas emerge naturally. If no one else is working on your idea, ask why — maybe the timing is wrong.</p>
+      <span class="tag">Innovation</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>First-Mover Disadvantage</h3>
+      <p>Being first also means absorbing all the cost of educating the market, making early mistakes, and building infrastructure. Fast followers can learn from the pioneer's mistakes at a fraction of the cost.</p>
+      <p class="detail">Google wasn't the first search engine. Facebook wasn't the first social network. Being first matters less than being best at the right time. Sometimes the second mouse gets the cheese.</p>
+      <span class="tag">Strategy</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Customer Hunting & Personas</h3>
+      <p>"What type of customer are you hunting?" ranges from flies (millions of tiny customers) to elephants and whales (a few huge enterprise deals). Your entire strategy depends on this choice.</p>
+      <p class="detail">Personas are fictional characters representing ideal customer segments. Back-of-the-envelope calculations let you quickly estimate market size, unit economics, and feasibility before diving deep.</p>
+      <span class="tag">Business</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Bright Spots & Heat-Seeking Missiles</h3>
+      <p>Bright spots are the few things already working well — study and amplify them instead of only fixing problems. Heat-seeking missiles constantly adjust course toward their target.</p>
+      <p class="detail">Entrepreneurs should be like heat-seeking missiles: constantly adjusting based on market feedback. The idea maze is the space of possible product directions — navigate it by pivoting toward bright spots.</p>
+      <span class="tag">Startup</span>
+    </div>
+    <div class="model-card" onclick="this.classList.toggle('expanded')">
+      <span class="expand-icon">+</span>
+      <h3>Winner-Take-Most & Only the Paranoid Survive</h3>
+      <p>In markets with strong network effects, one dominant player captures most of the value — winner-take-most. Andy Grove's motto: "Only the paranoid survive" — constant vigilance against disruption.</p>
+      <p class="detail">Barriers to exit trap companies in declining markets just as barriers to entry keep competitors out of profitable ones. Sustainable competitive advantage requires constant renewal of your moat.</p>
+      <span class="tag">Competition</span>
+    </div>
+  </div>
+
+  <!-- Supply and Demand Chart -->
+  <div class="diagram-container reveal">
+    <h4>Supply and Demand Equilibrium</h4>
+    <p style="color:var(--text-secondary);margin-bottom:15px;font-size:0.9rem;">Drag the slider to shift demand and see how the equilibrium price changes:</p>
+    <canvas id="sdCanvas" width="500" height="300" style="border:1px solid var(--border);background:var(--bg);border-radius:8px;"></canvas>
+    <input type="range" min="-100" max="100" value="0" id="sdSlider" oninput="drawSD(this.value)">
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
+      <span>&#8592; Demand decreases</span><span>Demand increases &#8594;</span>
+    </div>
+  </div>
+
+  <div class="quiz-section reveal">
+    <h4>&#127919; Chapter 9 Quiz</h4>
+    <div class="quiz-question">A new startup targets an overlooked niche with a simpler, cheaper product, then gradually improves to capture the mainstream. This is called:</div>
+    <div class="quiz-options">
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q9')">Economies of Scale</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q9')">First-Mover Advantage</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'correct','q9')">Disruption</button>
+      <button class="quiz-btn" onclick="checkQuiz(this,'wrong','q9')">Network Effects</button>
+    </div>
+    <div class="quiz-result" id="q9-result"></div>
+  </div>
+</section>
+
+<!-- ==================== CONCLUSION ==================== -->
+<section class="chapter-section" id="conclusion">
+  <div class="chapter-header">
+    <div class="chapter-number">Conclusion</div>
+    <h2 class="chapter-title">Your Super Thinking Toolkit</h2>
+    <p class="chapter-intro">You now have exposure to hundreds of mental models from dozens of disciplines. The key is practice — the more you apply them, the more naturally they'll come to mind.</p>
+  </div>
+
+  <!-- Mental Model Spectrum -->
+  <div class="diagram-container reveal">
+    <h4>Mental Models by Discipline</h4>
+    <div class="spectrum">
+      <div class="spectrum-segment" style="background:#1a56db;" title="Psychology">Psych</div>
+      <div class="spectrum-segment" style="background:#7c3aed;" title="Economics">Econ</div>
+      <div class="spectrum-segment" style="background:#db2777;" title="Physics">Physics</div>
+      <div class="spectrum-segment" style="background:#dc2626;" title="Biology">Bio</div>
+      <div class="spectrum-segment" style="background:#ea580c;" title="Mathematics">Math</div>
+      <div class="spectrum-segment" style="background:#ca8a04;" title="Business">Business</div>
+      <div class="spectrum-segment" style="background:#16a34a;" title="Philosophy">Phil</div>
+      <div class="spectrum-segment" style="background:#0891b2;" title="Game Theory">Games</div>
+    </div>
+    <p style="color:var(--text-secondary);margin-top:15px;font-size:0.9rem;text-align:center;">Super models span all disciplines — that's what makes them <em>super</em>.</p>
+  </div>
+
+  <div class="takeaway reveal">
+    <h4>The Super Thinking Manifesto</h4>
+    <ul>
+      <li><strong>Build a latticework</strong> — mental models from many disciplines work together</li>
+      <li><strong>Practice daily</strong> — apply models to decisions you face, big and small</li>
+      <li><strong>Stay humble</strong> — the more you learn, the more you realize you don't know</li>
+      <li><strong>Invert, always invert</strong> — consider problems from multiple perspectives</li>
+      <li><strong>Update your beliefs</strong> — be Bayesian, not dogmatic. New evidence should change your mind.</li>
+    </ul>
+  </div>
+
+  <div style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
+    <p style="font-size:1.1rem;font-style:italic;">"The best time to plant a tree was twenty years ago. The second best time is now."</p>
+    <p style="margin-top:20px;font-size:0.9rem;">Based on <strong>Super Thinking: The Big Book of Mental Models</strong> by Gabriel Weinberg &amp; Lauren McCann</p>
+  </div>
+</section>
+
+<!-- All Models Modal -->
+<div id="allModelsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
+  <div style="background:var(--surface);max-width:800px;margin:40px auto;border-radius:var(--radius);padding:30px;position:relative;">
+    <button onclick="document.getElementById('allModelsModal').style.display='none'" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text);">&#10005;</button>
+    <h3 style="margin-bottom:20px;">All Mental Models Reference</h3>
+    <div id="allModelsList" style="columns:2;column-gap:20px;font-size:0.85rem;"></div>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<script>
+// ========== GLOBAL STATE ==========
+let whyStep = 0, dsStep = 0, pdScore = 0, pdRounds = 0, overfitMode = false;
+const modelsExplored = new Set();
+
+// ========== NAVIGATION ==========
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.nav-item').forEach((n,i)=>{
+    n.classList.toggle('active', n.onclick?.toString().includes(id));
+  });
+  if(window.innerWidth<768) document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  if(window.innerWidth<768) sb.classList.toggle('open');
+  else sb.classList.toggle('collapsed');
+  document.getElementById('mainContent').style.marginLeft = sb.classList.contains('collapsed')?'0':'280px';
+}
+
+// ========== THEME ==========
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme', isDark?'':'dark');
+  document.getElementById('themeBtn').textContent = isDark?'\u{1F319} Dark':'\u2600\uFE0F Light';
+  redrawAllCharts();
+}
+
+// ========== SEARCH ==========
+function searchModels(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.model-card').forEach(c=>{
+    const text = c.textContent.toLowerCase();
+    c.style.display = !q || text.includes(q) ? '' : 'none';
+  });
+}
+
+// ========== ALL MODELS ==========
+const allModels = [
+  'First Principles','Inverse Thinking','Antifragile','De-Risking','MVP','Ockham\'s Razor',
+  'Conjunction Fallacy','Overfitting','Frame of Reference','Framing Effect','Nudging','Anchoring',
+  'Availability Bias','Filter Bubble','Echo Chamber','Confirmation Bias','Backfire Effect',
+  'Cognitive Dissonance','Thinking Gray','Devil\'s Advocate','Hanlon\'s Razor','Third Story',
+  'Most Respectful Interpretation','Fundamental Attribution Error','Self-Serving Bias',
+  'Veil of Ignorance','Just World Hypothesis','Learned Helplessness','Paradigm Shift',
+  'Proximate vs Root Cause','5 Whys','Optimistic Probability Bias','Unforced Error',
+  'Tragedy of the Commons','Tyranny of Small Decisions','Free Rider Problem','Herd Immunity',
+  'Externalities','Spillover Effects','Coase Theorem','Cap and Trade','Moral Hazard',
+  'Principal-Agent Problem','Asymmetric Information','Adverse Selection','Market Failure',
+  'Goodhart\'s Law','Campbell\'s Law','Perverse Incentives','Cobra Effect','Streisand Effect',
+  'Hydra Effect','Observer Effect','Chilling Effect','Collateral Damage','Blowback',
+  'Boiling Frog','Short-termism','Technical Debt','Path Dependence','Preserving Optionality',
+  'Precautionary Principle','Analysis Paralysis','Information Overload','Reversible vs Irreversible',
+  'Opportunity Cost','Sunk Cost Fallacy','Loss Aversion','Status Quo Bias','Default Effect',
+  'Pareto Principle (80/20)','Diminishing Returns','Negative Returns','Parkinson\'s Law',
+  'Hofstadter\'s Law','North Star','Eisenhower Matrix','Deep Work','Leverage',
+  'Critical Mass','Tipping Point','Activation Energy','Catalyst','Flywheel','Network Effects',
+  'Compound Growth','S-Curve','Entropy','Inertia','Momentum','Half-Life','Homeostasis',
+  'Normal Distribution','Power Law','Central Limit Theorem','Regression to the Mean',
+  'Selection Bias','Survivorship Bias','Response Bias','Simpson\'s Paradox',
+  'Correlation vs Causation','Confounding Variable','Bayesian Thinking','Base Rate',
+  'Cost-Benefit Analysis','Expected Value','Decision Trees','Black Swan','Fat Tails',
+  'Maslow\'s Hammer','Paradox of Choice','Satisficing vs Maximizing','Scenario Planning',
+  'Sensitivity Analysis','Monte Carlo Simulation','Systems Thinking','Feedback Loops',
+  'Prisoner\'s Dilemma','Nash Equilibrium','Zero-Sum vs Non-Zero-Sum','Tit for Tat',
+  'BATNA','Win-Win','Mutually Assured Destruction','Negotiation Leverage',
+  'Dunning-Kruger Effect','Peter Principle','Growth Mindset','Deliberate Practice',
+  'Imposter Syndrome','10x Performers','Flow State','Psychological Safety',
+  'Supply and Demand','Competitive Moat','Disruption','Economies of Scale',
+  'First-Mover Advantage','Barriers to Entry','Creative Destruction','Regulatory Capture',
+  // Ch1 additions
+  'Premature Optimization','Semmelweis Reflex','Disconfirmation Bias','Birth Lottery',
+  'Victim-Blame','Self-Serving Bias','Most Respectful Interpretation',
+  // Ch2 additions
+  'Asymmetric Information','Market Failure','Hydra Effect','Campbell\'s Law',
+  'Government Failure','Public Goods','Spillover Effects','Cap and Trade',
+  // Ch3 additions
+  'Present Bias','Hyperbolic Discounting','Net Present Value','Discount Rate',
+  'Bike-shedding','Sayre\'s Law','Design Pattern','Anti-Pattern','Heuristic',
+  'Brute Force','Automation','Parallel Processing','Divide and Conquer',
+  'Reframe the Problem','Compound Interest','Two-Front Wars','Burnout',
+  // Ch4 additions
+  'Natural Selection','Scientific Method','Strategy Tax','Shirky Principle',
+  'Lindy Effect','Peak','Potential Energy','Center of Gravity','Forcing Function',
+  'Chain Reaction','Technology Adoption Life Cycle','Metcalfe\'s Law',
+  'Cascading Failure','Butterfly Effect','Luck Surface Area','Polarity',
+  'Black-and-White Fallacy','In-Group Favoritism',
+  // Ch5 additions
+  'Anecdotal Evidence','Texas Sharpshooter Fallacy','A/B Testing',
+  'Randomized Controlled Experiment','Observer-Expectancy Bias','Placebo Effect',
+  'Nonresponse Bias','Law of Large Numbers','Gambler\'s Fallacy',
+  'Clustering Illusion','Mean vs Median vs Mode','Variance','Confidence Interval',
+  'Conditional Probability','Base Rate Fallacy','False Positive','False Negative',
+  'Null Hypothesis','Statistical Significance','p-value','p-hacking',
+  'Replication Crisis','Publication Bias','Meta-Analysis',
+  // Ch6 additions
+  'Pro-Con List','Utility Values','Utilitarianism','Garbage In Garbage Out',
+  'Le Chatelier\'s Principle','Hysteresis','Thought Experiment',
+  'Counterfactual Thinking','Lateral Thinking','Groupthink','Bandwagon Effect',
+  'Divergent Thinking','Convergent Thinking','Crowdsourcing','Prediction Market',
+  'Superforecasters','Unknown Unknowns',
+  // Ch7 additions
+  'Arms Race','Reciprocity','Commitment (Cialdini)','Liking','Social Proof',
+  'Scarcity','Authority','Social Norms vs Market Norms','Ultimatum Game',
+  'Distributive Justice','Procedural Justice','Appeal to Emotion','FUD',
+  'Straw Man','Ad Hominem','Dark Patterns','Trojan Horse','Bait and Switch',
+  'Potemkin Village','Deterrence','Carrot and Stick','Containment',
+  'Domino Effect','Slippery Slope','Broken Windows Theory','Gateway Drug Theory',
+  'Loss Leader','Appeasement','Red Line','Nuclear Option','Zero Tolerance',
+  'War of Attrition','Pyrrhic Victory','Guerrilla Warfare','Exit Strategy',
+  'Hail Mary','Burn the Boats',
+  // Ch8 additions
+  'Joy\'s Law','Nature vs Nurture','EQ','Generalists vs Specialists',
+  'Commandos Infantry Police','Foxes vs Hedgehogs','Managing to the Person',
+  'Strategy vs Tactics','Institutional Knowledge','Unicorn Candidate',
+  'Directly Responsible Individual','Bystander Effect','Power Vacuum',
+  'Spacing Effect','Radical Candor','Consequence-Conviction Matrix',
+  'Pygmalion Effect','Golem Effect','Maslow\'s Hierarchy of Needs',
+  'Hindsight Bias','High-Context vs Low-Context','Loyalists vs Mercenaries',
+  'Manager\'s vs Maker\'s Schedule','Dunbar\'s Number','Mythical Man-Month',
+  // Ch9 additions
+  'Arbitrage','Market Power','Consensus-Contrarian Matrix','Secret (Thiel)',
+  'Why Now?','Simultaneous Invention','Product/Market Fit','Resonant Frequency',
+  'Customer Development','OODA Loop','Pivot','Jobs to Be Done',
+  'Back-of-the-Envelope Calculation','Personas','Bright Spots','Beachhead',
+  'Idea Maze','Moat','Lock-in','Switching Costs','Winner-Take-Most',
+  'Only the Paranoid Survive','Crossing the Chasm'
+];
+
+function showAllModels() {
+  const m = document.getElementById('allModelsModal');
+  const l = document.getElementById('allModelsList');
+  l.innerHTML = allModels.map(n=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);">${n}</div>`).join('');
+  m.style.display = 'block';
+}
+
+// ========== PROGRESS BAR ==========
+window.addEventListener('scroll', ()=>{
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = (window.scrollY / h * 100).toFixed(0);
+  document.getElementById('progress-bar').style.width = pct+'%';
+  // Track models explored
+  document.querySelectorAll('.chapter-section').forEach(s=>{
+    if(s.getBoundingClientRect().top < window.innerHeight*0.5) modelsExplored.add(s.id);
+  });
+  document.getElementById('modelCounter').textContent = modelsExplored.size * 15;
+});
+
+// ========== REVEAL ON SCROLL ==========
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// ========== QUIZ ==========
+function checkQuiz(btn, result, quizId) {
+  const res = document.getElementById(quizId+'-result');
+  btn.classList.add(result);
+  if(result==='correct') {
+    res.textContent = 'Correct! Well done.';
+    res.className = 'quiz-result show correct';
+  } else {
+    res.textContent = 'Not quite — try again!';
+    res.className = 'quiz-result show incorrect';
+    setTimeout(()=>{ btn.classList.remove('wrong'); res.classList.remove('show'); }, 1500);
+  }
+}
+
+// ========== 5 WHYS ==========
+function revealNextWhy() {
+  if(whyStep >= 5) return;
+  whyStep++;
+  document.getElementById('arrow'+(whyStep-1)).style.display='block';
+  document.getElementById('why'+whyStep).style.display='block';
+  if(whyStep>=5) document.getElementById('whyBtn').textContent='Root cause found!';
+}
+
+// ========== DEATH SPIRAL ==========
+function revealNextDS() {
+  if(dsStep>=4) return;
+  dsStep++;
+  document.getElementById('dsA'+dsStep).style.display='block';
+  document.getElementById('ds'+dsStep).style.display='block';
+  if(dsStep>=4) document.getElementById('dsBtn').textContent='Cycle Complete!';
+}
+
+// ========== ANCHORING ==========
+function revealTurkey() { document.getElementById('turkeyAnswer').style.display='block'; }
+
+// ========== PRISONER'S DILEMMA ==========
+function playPD(choice) {
+  const opp = Math.random()>0.5?'cooperate':'defect';
+  let yourYears=0, msg='';
+  if(choice==='cooperate'&&opp==='cooperate'){yourYears=-1;msg='Both cooperated! 1 year each.';}
+  else if(choice==='cooperate'&&opp==='defect'){yourYears=-3;msg='You cooperated, they defected. You get 3 years!';}
+  else if(choice==='defect'&&opp==='cooperate'){yourYears=0;msg='You defected, they cooperated. You go free!';}
+  else{yourYears=-2;msg='Both defected. 2 years each.';}
+  pdScore+=yourYears;pdRounds++;
+  document.getElementById('pdResult').innerHTML=msg;
+  document.getElementById('pdScore').textContent=`Total years served: ${Math.abs(pdScore)} | Rounds: ${pdRounds}`;
+}
+
+// ========== HERD IMMUNITY ==========
+function updateHerd(val) {
+  document.getElementById('herdPct').textContent=val+'%';
+  const threshold=95;
+  const canvas=document.getElementById('herdCanvas');
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const cols=20,rows=5,r=8,gx=w/cols,gy=h/rows;
+  for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){
+    const idx=j*cols+i;const vaccinated=idx<(val/100*cols*rows);
+    ctx.beginPath();ctx.arc(gx*i+gx/2,gy*j+gy/2,r,0,Math.PI*2);
+    ctx.fillStyle=vaccinated?'#10b981':'#ef4444';ctx.fill();
+  }
+  const status=document.getElementById('herdStatus');
+  if(val>=threshold) status.innerHTML='<span style="color:#10b981;font-weight:700;">Herd immunity achieved! The unvaccinated are protected.</span>';
+  else if(val>=70) status.innerHTML='<span style="color:#f59e0b;font-weight:700;">Getting close, but outbreaks still possible.</span>';
+  else status.innerHTML='<span style="color:#ef4444;font-weight:700;">Below threshold — disease can spread freely.</span>';
+}
+
+// ========== EXPECTED VALUE ==========
+function updateEV() {
+  const prob=parseInt(document.getElementById('evProbSlider').value);
+  const win=parseInt(document.getElementById('evWinSlider').value);
+  const cost=parseInt(document.getElementById('evCostSlider').value);
+  document.getElementById('evProb').textContent=prob+'%';
+  document.getElementById('evWin').textContent='$'+win;
+  document.getElementById('evCost').textContent='$'+cost;
+  const ev=(prob/100*win)-cost;
+  const res=document.getElementById('evResult');
+  res.textContent=(ev>=0?'+':'')+('$'+ev.toFixed(0));
+  res.style.color=ev>=0?'var(--success)':'var(--danger)';
+  document.getElementById('evVerdict').textContent=ev>=0?'Positive EV — take the bet!':'Negative EV — pass!';
+  document.getElementById('evVerdict').style.color=ev>=0?'var(--success)':'var(--danger)';
+}
+
+// ========== CHART DRAWING ==========
+function getChartColors() {
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  return {
+    grid: isDark?'#334155':'#e5e7eb', text: isDark?'#94a3b8':'#555',
+    primary: '#3b82f6', accent: '#f59e0b', danger: '#ef4444', success: '#10b981',
+    bg: isDark?'#0f172a':'#f8f9fa'
+  };
+}
+
+// Overfitting
+function drawOverfit() {
+  const c=document.getElementById('overfitCanvas'),ctx=c.getContext('2d');
+  const col=getChartColors();
+  ctx.clearRect(0,0,c.width,c.height);
+  const points=[[40,250],[80,200],[130,220],[170,160],[220,180],[260,170],[310,120],[360,90],[400,100],[450,60]];
+  // Axes
+  ctx.strokeStyle=col.grid;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(30,10);ctx.lineTo(30,270);ctx.lineTo(480,270);ctx.stroke();
+  ctx.fillStyle=col.text;ctx.font='12px sans-serif';
+  ctx.fillText('Y',15,20);ctx.fillText('X',465,285);
+  // Points
+  points.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],5,0,Math.PI*2);ctx.fillStyle=col.primary;ctx.fill();});
+  // Simple line
+  ctx.strokeStyle=col.success;ctx.lineWidth=2;ctx.setLineDash([8,4]);
+  ctx.beginPath();ctx.moveTo(30,260);ctx.lineTo(470,40);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=col.success;ctx.font='bold 11px sans-serif';ctx.fillText('Simple model (good)',350,55);
+  // Overfit
+  if(overfitMode) {
+    ctx.strokeStyle=col.danger;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
+    for(let i=1;i<points.length;i++){
+      const xc=(points[i-1][0]+points[i][0])/2;
+      const yc=(points[i-1][1]+points[i][1])/2;
+      ctx.quadraticCurveTo(points[i-1][0],points[i-1][1],xc,yc);
+    }
+    ctx.stroke();
+    ctx.fillStyle=col.danger;ctx.fillText('Overfit model (bad)',350,75);
+  }
+}
+function toggleOverfit() {
+  overfitMode=!overfitMode;
+  document.getElementById('overfitBtn').textContent=overfitMode?'Show Simple Only':'Show Overfit Model';
+  drawOverfit();
+}
+
+// Diminishing Returns
+function drawDiminishing(val) {
+  const c=document.getElementById('diminishCanvas'),ctx=c.getContext('2d');
+  const col=getChartColors();
+  ctx.clearRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=40;
+  // Axes
+  ctx.strokeStyle=col.grid;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad,10);ctx.lineTo(pad,h-pad);ctx.lineTo(w-10,h-pad);ctx.stroke();
+  ctx.fillStyle=col.text;ctx.font='11px sans-serif';
+  ctx.fillText('Output',5,20);ctx.fillText('Hours of Effort',w/2-30,h-5);
+  // Curve
+  ctx.strokeStyle=col.primary;ctx.lineWidth=3;ctx.beginPath();
+  for(let x=0;x<=20;x++){
+    const px=pad+(x/20)*(w-pad-10);
+    const output=100*(1-Math.exp(-0.2*x));
+    const py=(h-pad)-output/100*(h-pad-20);
+    x===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  // Current point
+  const v=parseInt(val);
+  const px=pad+(v/20)*(w-pad-10);
+  const output=100*(1-Math.exp(-0.2*v));
+  const py=(h-pad)-output/100*(h-pad-20);
+  ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fillStyle=col.accent;ctx.fill();
+  ctx.strokeStyle=col.accent;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,h-pad);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(px,py);ctx.stroke();
+  ctx.setLineDash([]);
+  // Marginal gain
+  const prev=100*(1-Math.exp(-0.2*(v-1)));
+  const marginal=(output-prev).toFixed(1);
+  document.getElementById('diminishOutput').textContent=output.toFixed(0)+'%';
+  document.getElementById('diminishMarginal').textContent=marginal+'%';
+}
+
+// Pareto
+function drawPareto() {
+  const c=document.getElementById('paretoCanvas'),ctx=c.getContext('2d');
+  const col=getChartColors();
+  ctx.clearRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=50;
+  const bars=[35,25,12,8,5,4,3,2.5,2,1.5,1,0.5,0.3,0.2];
+  const max=35,bw=(w-pad-10)/bars.length;
+  ctx.fillStyle=col.text;ctx.font='11px sans-serif';
+  ctx.fillText('Revenue %',5,15);ctx.fillText('Customers (ranked)',w/2-40,h-5);
+  bars.forEach((v,i)=>{
+    const bh=v/max*(h-pad-20);
+    ctx.fillStyle=i<3?col.accent:col.primary;
+    ctx.fillRect(pad+i*bw+2,h-pad-bh,bw-4,bh);
+  });
+  // 80% line
+  ctx.strokeStyle=col.danger;ctx.setLineDash([6,3]);ctx.lineWidth=1;
+  const y80=h-pad-(80/100*(h-pad-20));
+  ctx.beginPath();ctx.moveTo(pad,y80);ctx.lineTo(w-10,y80);ctx.stroke();
+  ctx.fillStyle=col.danger;ctx.fillText('80% of revenue',pad+5,y80-5);
+  // 20% marker
+  const x20=pad+3*bw;
+  ctx.beginPath();ctx.moveTo(x20,20);ctx.lineTo(x20,h-pad);ctx.stroke();
+  ctx.fillText('20% of customers',x20+5,30);
+  ctx.setLineDash([]);
+}
+
+// Compound Growth
+function updateCompound(val) {
+  document.getElementById('compoundPct').textContent=parseFloat(val).toFixed(1);
+  const result=Math.pow(1+val/100,365);
+  document.getElementById('compoundResult').textContent=result.toFixed(1)+'x';
+  const c=document.getElementById('compoundCanvas'),ctx=c.getContext('2d');
+  const col=getChartColors();
+  ctx.clearRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=50;
+  ctx.strokeStyle=col.grid;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad,10);ctx.lineTo(pad,h-pad);ctx.lineTo(w-10,h-pad);ctx.stroke();
+  ctx.fillStyle=col.text;ctx.font='11px sans-serif';
+  ctx.fillText('Growth',5,20);ctx.fillText('Days',w/2,h-5);
+  const maxY=Math.min(result,50);
+  ctx.strokeStyle=col.success;ctx.lineWidth=3;ctx.beginPath();
+  for(let d=0;d<=365;d++){
+    const y=Math.pow(1+val/100,d);
+    const px=pad+(d/365)*(w-pad-10);
+    const py=h-pad-(Math.min(y,maxY)/maxY*(h-pad-20));
+    d===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  // 1x baseline
+  ctx.strokeStyle=col.grid;ctx.setLineDash([4,4]);ctx.lineWidth=1;
+  const baseY=h-pad-(1/maxY*(h-pad-20));
+  ctx.beginPath();ctx.moveTo(pad,baseY);ctx.lineTo(w-10,baseY);ctx.stroke();
+  ctx.fillStyle=col.text;ctx.fillText('1x (no growth)',pad+5,baseY-5);
+  ctx.setLineDash([]);
+}
+
+// S-Curve
+function drawSCurve() {
+  const c=document.getElementById('scurveCanvas'),ctx=c.getContext('2d');
+  const col=getChartColors();
+  ctx.clearRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=40;
+  ctx.strokeStyle=col.grid;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad,10);ctx.lineTo(pad,h-pad);ctx.lineTo(w-10,h-pad);ctx.stroke();
+  ctx.fillStyle=col.text;ctx.font='11px sans-serif';
+  ctx.fillText('Adoption',5,20);ctx.fillText('Time',w/2,h-5);
+  // S-curve
+  ctx.strokeStyle=col.primary;ctx.lineWidth=3;ctx.beginPath();
+  for(let x=0;x<=100;x++){
+    const t=x/100*12-6;
+    const y=1/(1+Math.exp(-t));
+    const px=pad+(x/100)*(w-pad-10);
+    const py=(h-pad)-y*(h-pad-20);
+    x===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  // Phase labels
+  ctx.fillStyle=col.accent;ctx.font='bold 11px sans-serif';
+  ctx.fillText('Slow Start',pad+20,h-pad-20);
+  ctx.fillText('Rapid Growth',w/2-30,h/2);
+  ctx.fillText('Plateau',w-100,40);
+}
+
+// Bell Curve
+function drawBellCurve(sigma) {
+  const c=document.getElementById('bellCanvas'),ctx=c.getContext('2d');
+  const col=getChartColors();
+  ctx.clearRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=30;
+  const s=parseInt(sigma);
+  ctx.strokeStyle=col.primary;ctx.lineWidth=3;
+  ctx.fillStyle='rgba(59,130,246,0.1)';ctx.beginPath();
+  const mean=w/2;
+  ctx.moveTo(pad,h-pad);
+  for(let x=pad;x<=w-pad;x++){
+    const z=(x-mean)/s;
+    const y=Math.exp(-0.5*z*z)/(s*Math.sqrt(2*Math.PI));
+    const py=h-pad-y*s*s*15;
+    ctx.lineTo(x,py);
+  }
+  ctx.lineTo(w-pad,h-pad);ctx.closePath();ctx.fill();
+  ctx.beginPath();
+  for(let x=pad;x<=w-pad;x++){
+    const z=(x-mean)/s;
+    const y=Math.exp(-0.5*z*z)/(s*Math.sqrt(2*Math.PI));
+    const py=h-pad-y*s*s*15;
+    x===pad?ctx.moveTo(x,py):ctx.lineTo(x,py);
+  }
+  ctx.stroke();
+  // Mean line
+  ctx.strokeStyle=col.accent;ctx.setLineDash([4,4]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(mean,10);ctx.lineTo(mean,h-pad);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=col.text;ctx.font='11px sans-serif';ctx.fillText('Mean',mean+5,20);
+}
+
+// Dunning-Kruger
+function drawDK() {
+  const c=document.getElementById('dkCanvas'),ctx=c.getContext('2d');
+  const col=getChartColors();
+  ctx.clearRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=40;
+  ctx.strokeStyle=col.grid;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad,10);ctx.lineTo(pad,h-pad);ctx.lineTo(w-10,h-pad);ctx.stroke();
+  ctx.fillStyle=col.text;ctx.font='11px sans-serif';
+  ctx.fillText('Confidence',5,20);ctx.fillText('Experience / Knowledge',w/2-50,h-5);
+  // DK curve
+  const points=[];
+  for(let x=0;x<=100;x++){
+    const t=x/100;
+    let y;
+    if(t<0.15) y=0.3+t/0.15*0.65;
+    else if(t<0.35) y=0.95-(t-0.15)/0.2*0.7;
+    else if(t<0.8) y=0.25+(t-0.35)/0.45*0.45;
+    else y=0.7+(t-0.8)/0.2*0.15;
+    points.push({x:pad+(t)*(w-pad-10),y:(h-pad)-y*(h-pad-20)});
+  }
+  ctx.strokeStyle=col.primary;ctx.lineWidth=3;ctx.beginPath();
+  points.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+  // Labels
+  ctx.fillStyle=col.danger;ctx.font='bold 10px sans-serif';
+  ctx.fillText('Mt. Stupid',pad+30,40);
+  ctx.fillStyle=col.primary;
+  ctx.fillText('Valley of Despair',pad+100,h-pad-20);
+  ctx.fillStyle=col.success;
+  ctx.fillText('Slope of Enlightenment',w/2+20,h/2+20);
+  ctx.fillText('Plateau of Sustainability',w-170,65);
+}
+
+// Supply & Demand
+function drawSD(shift) {
+  const c=document.getElementById('sdCanvas'),ctx=c.getContext('2d');
+  const col=getChartColors();
+  ctx.clearRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,pad=50;
+  const s=parseInt(shift);
+  ctx.strokeStyle=col.grid;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad,10);ctx.lineTo(pad,h-pad);ctx.lineTo(w-10,h-pad);ctx.stroke();
+  ctx.fillStyle=col.text;ctx.font='12px sans-serif';
+  ctx.fillText('Price',10,25);ctx.fillText('Quantity',w/2,h-5);
+  // Supply (upward sloping)
+  ctx.strokeStyle=col.success;ctx.lineWidth=2;ctx.beginPath();
+  ctx.moveTo(pad+30,h-pad-20);ctx.lineTo(w-30,40);ctx.stroke();
+  ctx.fillStyle=col.success;ctx.fillText('Supply',w-70,50);
+  // Demand (downward sloping, shifted)
+  ctx.strokeStyle=col.primary;ctx.lineWidth=2;ctx.beginPath();
+  const dx=s*0.8;
+  ctx.moveTo(pad+30+dx,40);ctx.lineTo(w-30+dx,h-pad-20);ctx.stroke();
+  ctx.fillStyle=col.primary;ctx.fillText('Demand',pad+40+dx,50);
+  // Equilibrium
+  const eqX=(w/2)+dx*0.4;
+  const eqY=h/2-dx*0.2;
+  ctx.beginPath();ctx.arc(eqX,eqY,6,0,Math.PI*2);ctx.fillStyle=col.accent;ctx.fill();
+  ctx.fillStyle=col.accent;ctx.font='bold 11px sans-serif';
+  ctx.fillText('Equilibrium',eqX+10,eqY-10);
+  // Price indicator
+  ctx.strokeStyle=col.accent;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(pad,eqY);ctx.lineTo(eqX,eqY);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=col.accent;ctx.fillText('P = '+(50+s*0.3).toFixed(0),pad-5,eqY-8);
+}
+
+// ========== DRAW ALL CHARTS ==========
+function redrawAllCharts() {
+  drawOverfit();
+  drawDiminishing(document.getElementById('diminishSlider').value);
+  drawPareto();
+  updateCompound(document.getElementById('compoundSlider').value);
+  drawSCurve();
+  drawBellCurve(document.getElementById('bellSlider').value);
+  drawDK();
+  drawSD(document.getElementById('sdSlider').value);
+  updateHerd(document.getElementById('herdSlider').value);
+  updateEV();
+}
+
+// ========== INIT ==========
+window.addEventListener('load', ()=>{
+  redrawAllCharts();
+  // Animate model counter
+  let count=0;
+  const target=allModels.length;
+  const interval=setInterval(()=>{
+    count+=3;
+    if(count>=target){count=target;clearInterval(interval);}
+    document.getElementById('modelCounter').textContent=count;
+  },20);
+});
+</script>
+</body>
+</html>
